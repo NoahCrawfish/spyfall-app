@@ -6,31 +6,36 @@ using System.Collections;
 public class HandleButtons : MonoBehaviour
 {
     [SerializeField] private GameObject mainMenu;
-    [SerializeField] private GameObject play1;
+    [SerializeField] private GameObject addPlayersScreen;
     [SerializeField] private GameObject roundScreen;
-    [SerializeField] private GameObject play2;
+    [SerializeField] private GameObject drawCardsScreen;
+    [SerializeField] private GameObject gameplayScreen;
 
     [SerializeField] private GameObject playerFields;
     [SerializeField] private GameObject playerFieldPrefab;
     [SerializeField] private GameObject scrollList;
+
+    [SerializeField] private GameObject card;
 
     private const float autoScrollSpeed = 0.1f;
     private const float roundScreenTime = 1f;
 
     private ManageGame manageGame;
     private UITransitions uiTransitions;
+    private AnimateCard animateCard;
 
     private void Awake() {
         manageGame = FindObjectOfType<ManageGame>();
         uiTransitions = FindObjectOfType<UITransitions>();
+        animateCard = card.GetComponent<AnimateCard>();
     }
 
     public void Play() {
-        uiTransitions.CrossFadeBetweenPanels(mainMenu.GetComponent<CanvasGroup>(), play1.GetComponent<CanvasGroup>());
+        uiTransitions.CrossFadeBetweenPanels(mainMenu.GetComponent<CanvasGroup>(), addPlayersScreen.GetComponent<CanvasGroup>());
     }
 
     public void Back_Play1() {
-        uiTransitions.CrossFadeBetweenPanels(play1.GetComponent<CanvasGroup>(), mainMenu.GetComponent<CanvasGroup>());
+        uiTransitions.CrossFadeBetweenPanels(addPlayersScreen.GetComponent<CanvasGroup>(), mainMenu.GetComponent<CanvasGroup>());
     }
 
     public void AddField() {
@@ -94,13 +99,21 @@ public class HandleButtons : MonoBehaviour
 
         // briefly show round screen
         if (manageGame.CurrentRound == 1) {
-            uiTransitions.CrossFadeBetweenPanels(play1.GetComponent<CanvasGroup>(), roundScreen.GetComponent<CanvasGroup>());
+            uiTransitions.CrossFadeBetweenPanels(addPlayersScreen.GetComponent<CanvasGroup>(), roundScreen.GetComponent<CanvasGroup>());
         }
         yield return new WaitForSeconds(roundScreenTime);
-        uiTransitions.CrossFadeBetweenPanels(roundScreen.GetComponent<CanvasGroup>(), play2.GetComponent<CanvasGroup>());
+        uiTransitions.CrossFadeBetweenPanels(roundScreen.GetComponent<CanvasGroup>(), drawCardsScreen.GetComponent<CanvasGroup>());
     }
 
     public void QuitGame() {
         uiTransitions.CrossFadeBetweenPanels(FindObjectOfType<CanvasGroup>(), mainMenu.GetComponent<CanvasGroup>());
+    }
+
+    public void NextCardButton() {
+        if (animateCard.CardCount < manageGame.Players.Count - 1) {
+            animateCard.NextCard();
+        } else {
+            uiTransitions.CrossFadeBetweenPanels(drawCardsScreen.GetComponent<CanvasGroup>(), gameplayScreen.GetComponent<CanvasGroup>());
+        }
     }
 }

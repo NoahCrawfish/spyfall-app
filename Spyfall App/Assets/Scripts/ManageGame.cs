@@ -147,7 +147,11 @@ public class Location {
 
     public Texture2D GetImage() {
         string searchFor = $"spr_{name.ToLower().Replace(" ", "_")}";
-        return Resources.Load(searchFor) as Texture2D;
+        Texture2D image = Resources.Load(searchFor) as Texture2D;
+        if (image == null) {
+            image = Resources.Load("image_not_found") as Texture2D;
+        }
+        return image;
     }
 }
 

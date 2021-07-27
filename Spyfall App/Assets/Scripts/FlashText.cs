@@ -19,6 +19,10 @@ public class FlashText : MonoBehaviour
     }
 
     private void OnDisable() {
+        ResetT();
+    }
+
+    public void ResetT() {
         t = 0f;
     }
 

@@ -137,7 +137,7 @@ GameObject:
   - component: {fileID: 4450258}
   - component: {fileID: 4450261}
   m_Layer: 5
-  m_Name: NextCard
+  m_Name: NextCardButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1124,7 +1124,7 @@ GameObject:
   - component: {fileID: 384590458}
   - component: {fileID: 384590457}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: CardInfoText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2523,6 +2523,7 @@ RectTransform:
   - {fileID: 1737448544}
   - {fileID: 1521050977}
   - {fileID: 567669380}
+  - {fileID: 2822397012084717222}
   - {fileID: 3328300936871218557}
   m_Father: {fileID: 0}
   m_RootOrder: 1
@@ -2545,12 +2546,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mainMenu: {fileID: 2035426196}
-  play1: {fileID: 1737448543}
+  addPlayersScreen: {fileID: 1737448543}
   roundScreen: {fileID: 1521050976}
-  play2: {fileID: 567669379}
+  drawCardsScreen: {fileID: 567669379}
+  gameplayScreen: {fileID: 2822397012084717217}
   playerFields: {fileID: 1443971763}
   playerFieldPrefab: {fileID: 4182108816220842056, guid: ed1f21df9874e4b4684a0fd58bd46707, type: 3}
   scrollList: {fileID: 2124963691}
+  card: {fileID: 943337453}
 --- !u!114 &737380169
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3056,7 +3059,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.8273995, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -3095,6 +3098,7 @@ GameObject:
   - component: {fileID: 943337458}
   - component: {fileID: 943337455}
   - component: {fileID: 943337459}
+  - component: {fileID: 943337460}
   m_Layer: 5
   m_Name: Card
   m_TagString: Untagged
@@ -3211,6 +3215,24 @@ MonoBehaviour:
   - {fileID: 21300000, guid: a2a94bfe72faf364c8857f1a7782f822, type: 3}
   blurPanel: {fileID: 704318179}
   playerPrompt: {fileID: 141581162}
+  promptTip: {fileID: 651747221}
+  nextCardButton: {fileID: 4450256}
+  cardInfo: {fileID: 578247492}
+  cardInfoImage: {fileID: 931400139}
+  cardInfoText: {fileID: 384590457}
+  spySprite: {fileID: 21300000, guid: 73bb64bac666bbc4db84ea561f3be809, type: 3}
+--- !u!225 &943337460
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 943337453}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!1 &957417294
 GameObject:
   m_ObjectHideFlags: 0
@@ -7662,6 +7684,94 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!1 &2822397012084717217
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2822397012084717222}
+  - component: {fileID: 2822397012084717221}
+  - component: {fileID: 2822397012084717220}
+  - component: {fileID: 2822397012084717223}
+  m_Layer: 5
+  m_Name: GameplayScreen
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!114 &2822397012084717220
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2822397012084717217}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 21300000, guid: ab5228b0e45081c4ea1b74b5970758d2, type: 3}
+  m_Type: 3
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 1
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &2822397012084717221
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2822397012084717217}
+  m_CullTransparentMesh: 1
+--- !u!224 &2822397012084717222
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2822397012084717217}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 737380167}
+  m_RootOrder: 4
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &2822397012084717223
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2822397012084717217}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!222 &3328300936871218432
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -7731,7 +7841,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 737380167}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
