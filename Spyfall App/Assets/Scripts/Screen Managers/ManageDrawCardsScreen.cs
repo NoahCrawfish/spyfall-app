@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
-public class AnimateCard : MonoBehaviour
+public class ManageDrawCardsScreen : MonoBehaviour
 {
     private const float swipeDistance = 300f;
     private const int framesInAnimation = 12;
@@ -14,11 +14,13 @@ public class AnimateCard : MonoBehaviour
     private const float cardInfoFadeSpeed = 0.0275f;
     private const float cardFadeOutSpeed = 0.1f;
 
+    [SerializeField] GameObject drawCardsScreen;
     [SerializeField] List<Sprite> framesBeforeAnimation;
+    [SerializeField] GameObject card;
     [SerializeField] GameObject blurPanel;
     [SerializeField] TextMeshProUGUI playerPrompt;
     [SerializeField] GameObject promptTip;
-    [SerializeField] GameObject nextCardButton;
+    public GameObject nextCardButton;
     [SerializeField] GameObject cardInfo;
     [SerializeField] Image cardInfoImage;
     [SerializeField] TextMeshProUGUI cardInfoText;
@@ -33,53 +35,61 @@ public class AnimateCard : MonoBehaviour
     private ManageGame manageGame;
 
     private void Awake() {
-        animator = GetComponent<Animator>();
-        image = GetComponent<Image>();
+        animator = card.GetComponent<Animator>();
+        image = card.GetComponent<Image>();
         manageGame = FindObjectOfType<ManageGame>();
     }
 
-    private void OnEnable() {
+
+    //called when the panel is first transitioned to
+    public void InitializeScreen() {
         CardCount = 0;
         UpdatePrompts();
         ResetCardAnimation();
+        StartCoroutine(CheckTouch());
     }
 
+    public IEnumerator CheckTouch() {
+        while (drawCardsScreen.activeSelf) {
+            yield return 0;
+            if (Input.touchCount > 0 && !animator.enabled) {
+                Touch touch = Input.GetTouch(0);
 
-    private void Update() {
-        if (Input.touchCount > 0 && !animator.enabled) {
-            Touch touch = Input.GetTouch(0);
+                switch (touch.phase) {
+                    case TouchPhase.Began:
+                        touchStart = touch.position;
+                        break;
+                    // card sprite is controlled by swipe distance, with the animation playing after a certain point
+                    case TouchPhase.Moved:
+                        float deltaY = touch.position.y - touchStart.y;
+                        float percentSwiped = deltaY / swipeDistance;
+                        int stage = Mathf.FloorToInt(percentSwiped * framesBeforeAnimation.Count);
+                        stage = Mathf.Clamp(stage, 0, framesBeforeAnimation.Count - 1);
 
-            switch (touch.phase) {
-                case TouchPhase.Began:
-                    touchStart = touch.position;
-                    break;
-                case TouchPhase.Moved:
-                    float deltaY = touch.position.y - touchStart.y;
-                    float percentSwiped = deltaY / swipeDistance;
-                    int stage = Mathf.FloorToInt(percentSwiped * framesBeforeAnimation.Count);
-                    stage = Mathf.Clamp(stage, 0, framesBeforeAnimation.Count - 1);
+                        image.sprite = framesBeforeAnimation[stage];
+                        if (percentSwiped >= 1) {
+                            BeginCardAnimation();
+                        }
+                        break;
+                    case TouchPhase.Ended:
+                        image.sprite = framesBeforeAnimation[0];
+                        break;
+                }
+            }
 
-                    image.sprite = framesBeforeAnimation[stage];
-                    if (percentSwiped >= 1) {
-                        BeginAnimation();
-                    }
-                    break;
-                case TouchPhase.Ended:
-                    image.sprite = framesBeforeAnimation[0];
-                    break;
+            // computer debugging
+            if (!animator.enabled && Input.GetKeyDown(KeyCode.D)) {
+                BeginCardAnimation();
             }
         }
-
-        if (!animator.enabled && Input.GetKeyDown(KeyCode.D)) {
-            BeginAnimation();
-        }
     }
 
 
-    private void BeginAnimation() {
+    private void BeginCardAnimation() {
         animator.enabled = true;
         animator.Play("CardFlip", -1, (float)framesBeforeAnimation.Count / framesInAnimation);
         blurPanel.SetActive(true);
+        // blur background and show card info afterwards
         StartCoroutine(BlurFade(true, blurSpeed, ShowCardInfo));
     }
 
@@ -90,6 +100,7 @@ public class AnimateCard : MonoBehaviour
         cardInfoImage.sprite = (currentRole == "Spy") ? spySprite : locationSprite;
         cardInfoText.text = (currentRole == "Spy") ? "You are the spy." : $"{manageGame.CurrentLocation.name}\nRole: {currentRole}";
 
+        // fade in card info
         StartCoroutine(CanvasGroupFade(true, cardInfo.GetComponent<CanvasGroup>(), cardInfoFadeSpeed, () => nextCardButton.gameObject.SetActive(true)));
     }
 
@@ -98,8 +109,9 @@ public class AnimateCard : MonoBehaviour
         CardCount += 1;
         UpdatePrompts();
 
+        // fade out card and info
         StartCoroutine(BlurFade(false, cardFadeOutSpeed, ResetCardAnimation));
-        StartCoroutine(CanvasGroupFade(false, GetComponent<CanvasGroup>(), cardFadeOutSpeed));
+        StartCoroutine(CanvasGroupFade(false, card.GetComponent<CanvasGroup>(), cardFadeOutSpeed));
     }
 
 
@@ -128,6 +140,7 @@ public class AnimateCard : MonoBehaviour
 
     private void UpdatePrompts() {
         playerPrompt.text = $"{manageGame.Players[CardCount].Name}:\nSwipe up";
+        // ensures that the tip is visible at the start of each new card
         promptTip.GetComponent<FlashText>().ResetT();
     }
 
@@ -135,7 +148,7 @@ public class AnimateCard : MonoBehaviour
         animator.enabled = false;
         blurPanel.SetActive(false);
         image.sprite = framesBeforeAnimation[0];
-        GetComponent<CanvasGroup>().alpha = 1;
+        card.GetComponent<CanvasGroup>().alpha = 1;
         cardInfo.GetComponent<CanvasGroup>().alpha = 0f;
     }
 

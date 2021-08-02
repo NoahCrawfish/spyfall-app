@@ -1,87 +1,67 @@
+using System;
 using UnityEngine;
-using UnityEngine.UI;
 using TMPro;
-using System.Collections;
 
 public class HandleButtons : MonoBehaviour
 {
     [SerializeField] private GameObject mainMenu;
     [SerializeField] private GameObject addPlayersScreen;
-    [SerializeField] private GameObject roundScreen;
     [SerializeField] private GameObject drawCardsScreen;
     [SerializeField] private GameObject gameplayScreen;
-
-    [SerializeField] private GameObject playerFields;
-    [SerializeField] private GameObject playerFieldPrefab;
-    [SerializeField] private GameObject scrollList;
-
-    [SerializeField] private GameObject card;
-
-    private const float autoScrollSpeed = 0.1f;
-    private const float roundScreenTime = 1f;
+    [SerializeField] private GameObject scoringScreen1;
+    [SerializeField] private GameObject scoringScreen2;
+    [SerializeField] private GameObject leaderboardScreen;
+    [SerializeField] private GameObject winnerScreen;
 
     private ManageGame manageGame;
     private UITransitions uiTransitions;
-    private AnimateCard animateCard;
+    private ManageAddPlayersScreen manageAddPlayers;
+    private ManageDrawCardsScreen manageDrawCards;
+    private ManageGameplayScreen manageGameplay;
+    private ManagePlayerScoring manageScoring;
+    private ManagePlayerScoring2 manageScoring2;
+    private ManageLeaderboard manageLeaderboard;
+    private ManageWinnerScreen manageWinner;
 
     private void Awake() {
         manageGame = FindObjectOfType<ManageGame>();
         uiTransitions = FindObjectOfType<UITransitions>();
-        animateCard = card.GetComponent<AnimateCard>();
+        manageAddPlayers = FindObjectOfType<ManageAddPlayersScreen>();
+        manageDrawCards = FindObjectOfType<ManageDrawCardsScreen>();
+        manageGameplay = FindObjectOfType<ManageGameplayScreen>();
+        manageScoring = FindObjectOfType<ManagePlayerScoring>();
+        manageScoring2 = FindObjectOfType<ManagePlayerScoring2>();
+        manageLeaderboard = FindObjectOfType<ManageLeaderboard>();
+        manageWinner = FindObjectOfType<ManageWinnerScreen>();
+    }
+
+    private CanvasGroup GetCurrentPanel() {
+        foreach (Transform child in transform) {
+            if (child.gameObject.activeSelf) {
+                try {
+                    return child.GetComponent<CanvasGroup>();
+                } catch (MissingComponentException) {
+                    throw new Exception($"Canvas group not found for {child.name}");
+                }
+            }
+        }
+        return null;
     }
 
     public void Play() {
-        uiTransitions.CrossFadeBetweenPanels(mainMenu.GetComponent<CanvasGroup>(), addPlayersScreen.GetComponent<CanvasGroup>());
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), addPlayersScreen.GetComponent<CanvasGroup>());
     }
 
     public void Back_Play1() {
-        uiTransitions.CrossFadeBetweenPanels(addPlayersScreen.GetComponent<CanvasGroup>(), mainMenu.GetComponent<CanvasGroup>());
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), mainMenu.GetComponent<CanvasGroup>());
     }
 
     public void AddField() {
-        // create field and format in vertical layout group
-        GameObject newField = Instantiate(playerFieldPrefab);
-        newField.transform.SetParent(playerFields.transform, false);
-        newField.transform.SetSiblingIndex(playerFields.transform.childCount - 2);
-
-        // set name and default text
-        newField.name = $"Player_{newField.transform.GetSiblingIndex() + 1}";
-        UpdateFieldPlaceholder(newField);
-
-        // scroll down to show new field
-        StartCoroutine(ScrollToBottom(scrollList.GetComponent<ScrollRect>(), autoScrollSpeed));
-    }
-
-    private IEnumerator ScrollToBottom(ScrollRect scrollRect, float scrollSpeed) {
-        yield return new WaitForEndOfFrame();
-        // previousScrollPos is used to test if the player has scrolled, canceling the auto scroll
-        float previousScrollPos = scrollRect.verticalNormalizedPosition;
-
-        while (scrollRect.verticalNormalizedPosition > 0f && previousScrollPos == scrollRect.verticalNormalizedPosition && scrollRect.gameObject.activeSelf) {
-            // autoscroll using asymptotic averaging
-            scrollRect.verticalNormalizedPosition -= scrollRect.verticalNormalizedPosition * scrollSpeed;
-            previousScrollPos = scrollRect.verticalNormalizedPosition;
-            yield return new WaitForEndOfFrame();
-        }
-    }
-
-    private void UpdateFieldPlaceholder(GameObject field) {
-        TextMeshProUGUI placeholder = (TextMeshProUGUI)field.transform.GetChild(0).GetComponent<TMP_InputField>().placeholder;
-        placeholder.text = field.name.Replace("_", " ");
+        manageAddPlayers.AddField();
     }
 
     public void Trash(GameObject caller) {
-        int callerPlace = caller.transform.parent.GetSiblingIndex();
-        // update name and placeholders for all fields under callerPlace in the sibling heiarchy
-        foreach (Transform child in playerFields.transform) {
-            GameObject childObject = child.gameObject;
-            if (childObject.name.Split('_')[0] == "Player" && child.GetSiblingIndex() > callerPlace) {
-                childObject.name = $"Player_{child.GetSiblingIndex()}";
-                UpdateFieldPlaceholder(childObject);
-            }
-        }
-
-        Destroy(caller.transform.parent.gameObject);
+        manageAddPlayers.Trash(caller);
     }
 
     public void Begin() {
@@ -90,30 +70,100 @@ public class HandleButtons : MonoBehaviour
         manageGame.InitializeLocationsUsing();
         manageGame.ResetRounds();
 
-        StartCoroutine(NextRound());
-    }
-
-    private IEnumerator NextRound() {
-        manageGame.UpdateRound();
-        manageGame.AssignLocationAndRoles();
-
-        // briefly show round screen
-        if (manageGame.CurrentRound == 1) {
-            uiTransitions.CrossFadeBetweenPanels(addPlayersScreen.GetComponent<CanvasGroup>(), roundScreen.GetComponent<CanvasGroup>());
-        }
-        yield return new WaitForSeconds(roundScreenTime);
-        uiTransitions.CrossFadeBetweenPanels(roundScreen.GetComponent<CanvasGroup>(), drawCardsScreen.GetComponent<CanvasGroup>());
+        StartCoroutine(manageGame.StartNextRound(GetCurrentPanel()));
     }
 
     public void QuitGame() {
-        uiTransitions.CrossFadeBetweenPanels(FindObjectOfType<CanvasGroup>(), mainMenu.GetComponent<CanvasGroup>());
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), mainMenu.GetComponent<CanvasGroup>());
     }
 
     public void NextCardButton() {
-        if (animateCard.CardCount < manageGame.Players.Count - 1) {
-            animateCard.NextCard();
+        if (manageDrawCards.CardCount < manageGame.Players.Count - 1) {
+            manageDrawCards.NextCard();
         } else {
-            uiTransitions.CrossFadeBetweenPanels(drawCardsScreen.GetComponent<CanvasGroup>(), gameplayScreen.GetComponent<CanvasGroup>());
+            manageDrawCards.nextCardButton.gameObject.SetActive(false);
+            Screen.sleepTimeout = SleepTimeout.NeverSleep;
+            uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), gameplayScreen.GetComponent<CanvasGroup>());
+            manageGameplay.InitializeScreen();
         }
+    }
+
+    public void DoneWithRound() {
+        Screen.sleepTimeout = SleepTimeout.SystemSetting;
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), scoringScreen1.GetComponent<CanvasGroup>());
+        manageScoring.SetPreviousScores();
+    }
+
+    public void SkipScoring() {
+        StartCoroutine(manageGame.StartNextRound(GetCurrentPanel()));
+    }
+
+    public void SpyFound() {
+        manageScoring2.RefreshPlayerButtons();
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), scoringScreen2.GetComponent<CanvasGroup>());
+    }
+
+    public void SpyGuessedWrong() {
+        manageScoring2.RefreshPlayerButtons();
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), scoringScreen2.GetComponent<CanvasGroup>());
+    }
+
+    public void SpyGuessedRight() {
+        manageScoring.UpdateScores(ManagePlayerScoring.RoundEndings.spyGuessedRight);
+        manageLeaderboard.RefreshLeaderboard();
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), leaderboardScreen.GetComponent<CanvasGroup>());
+    }
+
+    public void InnocentVoted() {
+        manageScoring.UpdateScores(ManagePlayerScoring.RoundEndings.innocentVoted);
+        manageLeaderboard.RefreshLeaderboard();
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), leaderboardScreen.GetComponent<CanvasGroup>());
+    }
+
+    public void TimeRanOut() {
+        manageScoring.UpdateScores(ManagePlayerScoring.RoundEndings.timeRanOut);
+        manageLeaderboard.RefreshLeaderboard();
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), leaderboardScreen.GetComponent<CanvasGroup>());
+    }
+
+    public void Back_Scoring2() {
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), scoringScreen1.GetComponent<CanvasGroup>());
+    }
+
+    public void NoOneVoted() {
+        manageScoring.UpdateScores(ManagePlayerScoring.RoundEndings.spyFoundOrGuessedWrong);
+        manageLeaderboard.RefreshLeaderboard();
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), leaderboardScreen.GetComponent<CanvasGroup>());
+    }
+
+    public void PlayerButton(GameObject caller) {
+        Player firstToVote = null;
+        foreach (var player in manageGame.Players) {
+            if (player.Name == caller.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text) {
+                firstToVote = player;
+            }
+        }
+
+        manageScoring.UpdateScores(ManagePlayerScoring.RoundEndings.spyFoundOrGuessedWrong, firstToVote);
+        manageLeaderboard.RefreshLeaderboard();
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), leaderboardScreen.GetComponent<CanvasGroup>());
+    }
+
+    public void Back_Leaderboard() {
+        manageScoring.ResetScoresToPrevious();
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), scoringScreen1.GetComponent<CanvasGroup>());
+    }
+
+    public void NextRoundButton() {
+        if (manageGame.CurrentRound < manageGame.MaxRounds) {
+            StartCoroutine(manageGame.StartNextRound(GetCurrentPanel()));
+        } else {
+            uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), winnerScreen.GetComponent<CanvasGroup>());
+            manageWinner.GetWinners();
+        }
+    }
+
+    public void GameFinishedButton() {
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), addPlayersScreen.GetComponent<CanvasGroup>());
     }
 }

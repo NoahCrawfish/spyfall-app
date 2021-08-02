@@ -7,6 +7,7 @@ public class UITransitions : MonoBehaviour
     private const float crossFadeSpeed = 0.25f;
     private const float dipToColorDissolveSpeed = 0.175f;
     private const float defaultDipToColorWaitTime = 0f;
+    public CanvasGroup PreviousScreen { get; private set; }
     [SerializeField] private GameObject clickBlocker; // panel with a canvas group that blocks raycasts; must be the lowest of sibling panels
 
     private enum TransitionModes {
@@ -15,6 +16,7 @@ public class UITransitions : MonoBehaviour
     }
 
     public void CrossFadeBetweenPanels(CanvasGroup startPanel, CanvasGroup finishPanel, float speed = crossFadeSpeed, Color? bg = null) {
+        PreviousScreen = startPanel;
         GetComponent<Image>().color = bg ?? Color.black;
         clickBlocker.SetActive(true);
         Task fadeOutPanel = new Task(FadeOutPanel(startPanel, speed, TransitionModes.CrossFade));
@@ -23,6 +25,7 @@ public class UITransitions : MonoBehaviour
     }
 
     public void DipToColorDissolveBetweenPanels(CanvasGroup startPanel, CanvasGroup finishPanel, float speed = dipToColorDissolveSpeed, float dipToColorWaitTime = defaultDipToColorWaitTime, Color? bg = null) {
+        PreviousScreen = startPanel;
         GetComponent<Image>().color = bg ?? Color.black;
         clickBlocker.SetActive(true);
         StartCoroutine(FadeOutPanel(startPanel, speed, TransitionModes.DipToColorDissolve, finishPanel, dipToColorWaitTime));

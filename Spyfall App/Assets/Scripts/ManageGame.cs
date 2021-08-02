@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,11 +6,18 @@ using UnityEngine;
 using TMPro;
 
 public class ManageGame : MonoBehaviour {
+    [SerializeField] GameObject addPlayersScreen;
+    [SerializeField] GameObject roundScreen;
+    [SerializeField] GameObject drawCardsScreen;
     [SerializeField] private GameObject playerFields;
     [SerializeField] private TextMeshProUGUI roundText;
-    
+
+    private const float roundScreenTime = 1f;
     public List<Player> Players { get; private set; } = new List<Player>();
     public List<List<Location>> Locations { get; private set; } = new List<List<Location>>();
+    public bool Paused { get; private set; }
+    public DateTime PauseTime { get; private set; }
+    public DateTime UnpauseTime { get; private set; }
     
     // current round
     public int CurrentRound { get; private set; } = 0;
@@ -24,6 +32,9 @@ public class ManageGame : MonoBehaviour {
     public int LastRoundMultiplier { get; private set; } = 1;
 
     private static readonly System.Random rand = new System.Random();
+    private UITransitions uiTransitions;
+    private ManageDrawCardsScreen manageDrawCards;
+    private ManageGameplayScreen manageGameplay;
 
     public enum TimerModes { 
         disabled,
@@ -36,11 +47,41 @@ public class ManageGame : MonoBehaviour {
         spy
     }
 
+    private void Awake() {
+        uiTransitions = FindObjectOfType<UITransitions>();
+        manageDrawCards = FindObjectOfType<ManageDrawCardsScreen>();
+        manageGameplay = FindObjectOfType<ManageGameplayScreen>();
+    }
+
     private void Start() {
         MaxPoints[(int)PlayerTypes.civilian] = 2;
         MaxPoints[(int)PlayerTypes.spy] = 4;
         InitializeLocations();
     }
+
+    private void OnApplicationFocus(bool focus) {
+        if (Paused == focus) {
+            if (focus) {
+                UnpauseTime = DateTime.Now;
+                manageGameplay.UpdateTimerFromPause();
+            } else {
+                PauseTime = DateTime.Now;
+            }
+        }
+        Paused = !focus;
+    }
+    private void OnApplicationPause(bool pause) {
+        if (Paused != pause) {
+            if (pause) {
+                PauseTime = DateTime.Now;
+            } else {
+                UnpauseTime = DateTime.Now;
+                manageGameplay.UpdateTimerFromPause();
+            }
+        }
+        Paused = pause;
+    }
+
 
     // creates list of Location classes from dictionary
     private void InitializeLocations() {
@@ -67,14 +108,6 @@ public class ManageGame : MonoBehaviour {
         }
     }
 
-    public void ResetRounds() {
-        CurrentRound = 0;
-    }
-
-    public void UpdateRound() {
-        CurrentRound += 1;
-        roundText.text = $"Round\n{CurrentRound}";
-    }
 
     public void InitializeLocationsUsing() {
         LocationsUsing.Clear();
@@ -84,6 +117,24 @@ public class ManageGame : MonoBehaviour {
                 LocationsUsing.Add(location);
             }
         }
+    }
+
+    public void ResetRounds() {
+        CurrentRound = 0;
+    }
+
+    public IEnumerator StartNextRound(CanvasGroup currentPanel) {
+        CurrentRound += 1;
+        roundText.text = (CurrentRound < MaxRounds) ? $"Round\n{CurrentRound}" : "Final\nRound";
+        AssignLocationAndRoles();
+
+        // briefly show round screen
+        uiTransitions.CrossFadeBetweenPanels(currentPanel, roundScreen.GetComponent<CanvasGroup>());
+        yield return new WaitForSeconds(roundScreenTime);
+        uiTransitions.CrossFadeBetweenPanels(roundScreen.GetComponent<CanvasGroup>(), drawCardsScreen.GetComponent<CanvasGroup>());
+
+        yield return 0; // wait till next frame so that gameobject is active
+        manageDrawCards.InitializeScreen();
     }
 
     public void AssignLocationAndRoles() {
@@ -105,7 +156,8 @@ public class ManageGame : MonoBehaviour {
 public class Player {
     public string Name { get; private set; }
     public string Role { get; set; }
-    public float Score { get; private set; } = 0f;
+    public float Score { get; set; } = 0f;
+    public float PreviousScore { get; set; } = 0f;
 
     public Player(string name) {
         Name = name;
@@ -145,6 +197,7 @@ public class Location {
         return players;
     }
 
+    // gets location image from resources folder, if none is found it pulls an "image not found" placeholder
     public Texture2D GetImage() {
         string searchFor = $"spr_{name.ToLower().Replace(" ", "_")}";
         Texture2D image = Resources.Load(searchFor) as Texture2D;
