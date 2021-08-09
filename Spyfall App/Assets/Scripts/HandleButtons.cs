@@ -12,6 +12,7 @@ public class HandleButtons : MonoBehaviour
     [SerializeField] private GameObject scoringScreen2;
     [SerializeField] private GameObject leaderboardScreen;
     [SerializeField] private GameObject winnerScreen;
+    [SerializeField] private GameObject settingsScreen;
 
     private ManageGame manageGame;
     private UITransitions uiTransitions;
@@ -22,6 +23,7 @@ public class HandleButtons : MonoBehaviour
     private ManagePlayerScoring2 manageScoring2;
     private ManageLeaderboard manageLeaderboard;
     private ManageWinnerScreen manageWinner;
+    private ManageSettingsScreen manageSettings;
 
     private void Awake() {
         manageGame = FindObjectOfType<ManageGame>();
@@ -33,6 +35,7 @@ public class HandleButtons : MonoBehaviour
         manageScoring2 = FindObjectOfType<ManagePlayerScoring2>();
         manageLeaderboard = FindObjectOfType<ManageLeaderboard>();
         manageWinner = FindObjectOfType<ManageWinnerScreen>();
+        manageSettings = FindObjectOfType<ManageSettingsScreen>();
     }
 
     private CanvasGroup GetCurrentPanel() {
@@ -95,7 +98,7 @@ public class HandleButtons : MonoBehaviour
     }
 
     public void SkipScoring() {
-        StartCoroutine(manageGame.StartNextRound(GetCurrentPanel()));
+        NextRoundButton();
     }
 
     public void SpyFound() {
@@ -165,5 +168,35 @@ public class HandleButtons : MonoBehaviour
 
     public void GameFinishedButton() {
         uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), addPlayersScreen.GetComponent<CanvasGroup>());
+    }
+
+    public void MinusButton(GameObject caller) {
+        caller.transform.parent.GetComponent<IncrementController>().Subtract();
+    }
+
+    public void PlusButton(GameObject caller) {
+        caller.transform.parent.GetComponent<IncrementController>().Add();
+    }
+
+    public void TimerModeButton(GameObject caller) {
+        caller.GetComponent<TimerModeController>().CycleStage();
+    }
+
+    public void Settings() {
+        manageSettings.LoadSettings();
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), settingsScreen.GetComponent<CanvasGroup>());
+    }
+
+    public void SaveSettings() {
+        manageSettings.SaveSettings();
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), mainMenu.GetComponent<CanvasGroup>());
+    }
+
+    public void DefaultSettings() {
+        manageSettings.SetUIToDefault();
+    }
+
+    public void CancelSettings() {
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), mainMenu.GetComponent<CanvasGroup>());
     }
 }

@@ -24,17 +24,19 @@ public class ManageGame : MonoBehaviour {
     public Location CurrentLocation { get; private set; }
     public List<Location> LocationsUsing { get; private set; } = new List<Location>();
 
-    // settings
-    public int MaxRounds { get; private set; } = 3;
-    public int TimerSeconds { get; private set; } = 60;
-    public TimerModes TimerMode { get; private set; } = TimerModes.perPlayer;
+    // current settings
+    public int MaxRounds { get; private set; }
+    public int TimerSeconds { get; private set; }
+    public TimerModes TimerMode { get; private set; }
     public int[] MaxPoints { get; private set; } = new int[2];
-    public int LastRoundMultiplier { get; private set; } = 1;
+    public bool ScoringDisabled { get; private set; }
+    public int LastRoundMultiplier { get; private set; }
 
     private static readonly System.Random rand = new System.Random();
     private UITransitions uiTransitions;
     private ManageDrawCardsScreen manageDrawCards;
     private ManageGameplayScreen manageGameplay;
+    private ManageSettingsScreen manageSettings;
 
     public enum TimerModes { 
         disabled,
@@ -51,12 +53,12 @@ public class ManageGame : MonoBehaviour {
         uiTransitions = FindObjectOfType<UITransitions>();
         manageDrawCards = FindObjectOfType<ManageDrawCardsScreen>();
         manageGameplay = FindObjectOfType<ManageGameplayScreen>();
+        manageSettings = FindObjectOfType<ManageSettingsScreen>();
     }
 
     private void Start() {
-        MaxPoints[(int)PlayerTypes.civilian] = 2;
-        MaxPoints[(int)PlayerTypes.spy] = 4;
         InitializeLocations();
+        RefreshSettings();
     }
 
     private void OnApplicationFocus(bool focus) {
@@ -81,7 +83,7 @@ public class ManageGame : MonoBehaviour {
         }
         Paused = pause;
     }
-
+    
 
     // creates list of Location classes from dictionary
     private void InitializeLocations() {
@@ -148,8 +150,42 @@ public class ManageGame : MonoBehaviour {
         }
     }
 
-    public void UpdateSettings() {
 
+    public void RefreshSettings() {
+        foreach (int pref in Enum.GetValues(typeof(ManageSettingsScreen.Prefs))) {
+            string prefName = Enum.GetName(typeof(ManageSettingsScreen.Prefs), (ManageSettingsScreen.Prefs)pref);
+            if (PlayerPrefs.HasKey(prefName)) {
+                SetPref((ManageSettingsScreen.Prefs)pref, PlayerPrefs.GetInt(prefName));
+            } else {
+                SetPref((ManageSettingsScreen.Prefs)pref, manageSettings.defaultValues[pref]);
+            }
+        }
+    }
+
+    private void SetPref(ManageSettingsScreen.Prefs pref, int value) {
+        switch (pref) {
+            case ManageSettingsScreen.Prefs.Rounds:
+                MaxRounds = value;
+                break;
+            case ManageSettingsScreen.Prefs.Time:
+                TimerSeconds = value;
+                break;
+            case ManageSettingsScreen.Prefs.TimerMode:
+                TimerMode = (TimerModes)value;
+                break;
+            case ManageSettingsScreen.Prefs.CivilianPoints:
+                MaxPoints[(int)PlayerTypes.civilian] = value;
+                break;
+            case ManageSettingsScreen.Prefs.SpyPoints:
+                MaxPoints[(int)PlayerTypes.spy] = value;
+                break;
+            case ManageSettingsScreen.Prefs.ScoringDisabled:
+                ScoringDisabled = value.ToBool();
+                break;
+            case ManageSettingsScreen.Prefs.LastRoundMultiplier:
+                LastRoundMultiplier = value;
+                break;
+        }
     }
 }
 
@@ -220,5 +256,20 @@ public static class Extensions {
             list[k] = list[n];
             list[n] = value;
         }
+    }
+
+    public static bool ToBool(this int i) {
+        return i switch {
+            0 => false,
+            1 => true,
+            _ => throw new ArgumentOutOfRangeException("integer", "int value must be 0 or 1 to convert to a bool"),
+        };
+    }
+
+    public static int ToInt(this bool i) {
+        if (i) {
+            return 1;
+        }
+        return 0;
     }
 }

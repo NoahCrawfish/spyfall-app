@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 #if UNITY_IOS
 using Unity.Notifications.iOS;
@@ -10,6 +11,7 @@ using Unity.Notifications.iOS;
 public class ManageGameplayScreen : MonoBehaviour
 {
     [SerializeField] GameObject gameplayScreen;
+    [SerializeField] GameObject content;
     [SerializeField] TextMeshProUGUI locationsList;
     [SerializeField] TextMeshProUGUI timerText;
 
@@ -71,6 +73,8 @@ public class ManageGameplayScreen : MonoBehaviour
         text = text.Remove(text.Length - 1);
 
         locationsList.text = text;
+        // needed to get content fitter to scale properly with content
+        content.GetComponent<VerticalLayoutGroup>().spacing += 0.01f;
     }
 
     private IEnumerator UpdateTimer() {
