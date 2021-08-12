@@ -254,7 +254,7 @@ MonoBehaviour:
     m_HighlightedColor: {r: 0.023529412, g: 0.023529412, b: 0.023529412, a: 1}
     m_PressedColor: {r: 0.22745098, g: 0.22745098, b: 0.22745098, a: 1}
     m_SelectedColor: {r: 0.023529412, g: 0.023529412, b: 0.023529412, a: 1}
-    m_DisabledColor: {r: 1, g: 0, b: 0.067070484, a: 0.2}
+    m_DisabledColor: {r: 0.22745098, g: 0.22745098, b: 0.22745098, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:
@@ -520,10 +520,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   value: 1
+  disabled: 0
   incrementAmount: 1
   minValue: 1
   maxValue: 25
   trailingZeros: 0
+  enabledColor: {r: 0.023529412, g: 0.023529412, b: 0.023529412, a: 1}
+  disabledColor: {r: 0.22745098, g: 0.22745098, b: 0.22745098, a: 1}
 --- !u!1 &1419455805188241537
 GameObject:
   m_ObjectHideFlags: 0
@@ -720,7 +723,7 @@ MonoBehaviour:
     m_HighlightedColor: {r: 0.023529412, g: 0.023529412, b: 0.023529412, a: 1}
     m_PressedColor: {r: 0.22745098, g: 0.22745098, b: 0.22745098, a: 1}
     m_SelectedColor: {r: 0.023529412, g: 0.023529412, b: 0.023529412, a: 1}
-    m_DisabledColor: {r: 1, g: 0, b: 0.067070484, a: 0.2}
+    m_DisabledColor: {r: 0.22745098, g: 0.22745098, b: 0.22745098, a: 1}
     m_ColorMultiplier: 1
     m_FadeDuration: 0.1
   m_SpriteState:

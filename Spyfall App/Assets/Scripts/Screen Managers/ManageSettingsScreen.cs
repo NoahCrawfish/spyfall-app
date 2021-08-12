@@ -63,7 +63,6 @@ public class ManageSettingsScreen : MonoBehaviour
         timeSelect.transform.Find("SecInput").GetComponent<TMP_InputField>().text = seconds.ToString("D2");
         timerModeButton.Stage = (ManageGame.TimerModes)PlayerPrefs.GetInt(Enum.GetName(typeof(Prefs), Prefs.TimerMode), defaultValues[(int)Prefs.TimerMode]);
         timerModeButton.SetText();
-        timeSelect.GetComponent<TimeSelectController>().UpdateIfDisabled();
         civlianPointsIncrement.Value = PlayerPrefs.GetInt(Enum.GetName(typeof(Prefs), Prefs.CivilianPoints), defaultValues[(int)Prefs.CivilianPoints]);
         civlianPointsIncrement.RefreshValue();
         spyPointsIncrement.Value = PlayerPrefs.GetInt(Enum.GetName(typeof(Prefs), Prefs.SpyPoints), defaultValues[(int)Prefs.SpyPoints]);
@@ -82,7 +81,6 @@ public class ManageSettingsScreen : MonoBehaviour
         timeSelect.transform.Find("SecInput").GetComponent<TMP_InputField>().text = seconds.ToString("D2");
         timerModeButton.Stage = (ManageGame.TimerModes)defaultValues[(int)Prefs.TimerMode];
         timerModeButton.SetText();
-        timeSelect.GetComponent<TimeSelectController>().UpdateIfDisabled();
         civlianPointsIncrement.Value = defaultValues[(int)Prefs.CivilianPoints];
         civlianPointsIncrement.RefreshValue();
         spyPointsIncrement.Value = defaultValues[(int)Prefs.SpyPoints];

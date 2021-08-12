@@ -7,7 +7,21 @@ public class TimerModeController : MonoBehaviour
 {
     [SerializeField] TimeSelectController timeSelect;
     private readonly List<string> modesText = new List<string>{ "Disabled", "Per Player", "Fixed" };
-    public ManageGame.TimerModes Stage { get; set; } = ManageGame.TimerModes.perPlayer;
+    private ManageGame.TimerModes stage = ManageGame.TimerModes.perPlayer;
+    public ManageGame.TimerModes Stage {
+        get { return stage; }
+        set {
+            stage = value;
+            switch (stage) {
+                case ManageGame.TimerModes.disabled:
+                    timeSelect.Disabled = true;
+                    break;
+                case ManageGame.TimerModes.perPlayer:
+                    timeSelect.Disabled = false;
+                    break;
+            }
+        }
+    }
 
     public void CycleStage() {
         switch (Stage) {
@@ -21,9 +35,7 @@ public class TimerModeController : MonoBehaviour
                 Stage = ManageGame.TimerModes.perPlayer;
                 break;
         }
-
         SetText();
-        timeSelect.TimerModeChanged();
     }
 
     public void SetText() {

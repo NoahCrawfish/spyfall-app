@@ -1,16 +1,26 @@
-using System;
+using System.Collections;
 using UnityEngine;
+using UnityEngine.UI.ProceduralImage;
 using TMPro;
 
 public class TimeSelectController : MonoBehaviour
 {
-    [SerializeField] TMP_InputField minInput;
-    [SerializeField] TMP_InputField secInput;
-    [SerializeField] GameObject timerModeButton;
+    [SerializeField] private TMP_InputField minInput;
+    [SerializeField] private TMP_InputField secInput;
+    [SerializeField] private GameObject timerModeButton;
+    [SerializeField] private Color enabledColor;
+    [SerializeField] private Color disabledColor;
     private const int minTimeSeconds = 30;
     private string minBeforeDisable = "01";
     private string secBeforeDisable = "00";
-
+    private bool disabled;
+    public bool Disabled {
+        get { return disabled; }
+        set {
+            disabled = value;
+            DisabledUpdated(disabled);
+        }
+    }
 
     private void OnEnable() {
         minInput.onDeselect.AddListener(OnMinChange);
@@ -26,8 +36,10 @@ public class TimeSelectController : MonoBehaviour
             value = "0";
         }
         minInput.text = Mathf.Clamp(int.Parse(value), 0, 59).ToString("D2");
+        minBeforeDisable = minInput.text;
         if (int.Parse(value) == 0 && int.Parse(secInput.text) < minTimeSeconds) {
             secInput.text = minTimeSeconds.ToString("D2");
+            secBeforeDisable = secInput.text;
         }
     }
 
@@ -36,24 +48,19 @@ public class TimeSelectController : MonoBehaviour
             value = "0";
         }
         secInput.text = Mathf.Clamp(int.Parse(value), int.Parse(minInput.text) == 0 ? minTimeSeconds : 0, 59).ToString("D2");
+        secBeforeDisable = secInput.text;
     }
 
-    public void TimerModeChanged() {
-        if (timerModeButton.GetComponent<TimerModeController>().Stage == ManageGame.TimerModes.disabled) {
-            minBeforeDisable = minInput.text;
-            secBeforeDisable = secInput.text;
-            UpdateIfDisabled();
-        } else if (timerModeButton.GetComponent<TimerModeController>().Stage == ManageGame.TimerModes.perPlayer) {
+    private void DisabledUpdated(bool disabled) {
+        if (disabled) {
+            minInput.text = secInput.text = "--";
+            minInput.interactable = secInput.interactable = false;
+            GetComponent<ProceduralImage>().color = disabledColor;
+        } else {
             minInput.text = minBeforeDisable;
             secInput.text = secBeforeDisable;
             minInput.interactable = secInput.interactable = true;
-        }
-    }
-
-    public void UpdateIfDisabled() {
-        if (timerModeButton.GetComponent<TimerModeController>().Stage == ManageGame.TimerModes.disabled) {
-            minInput.text = secInput.text = "--";
-            minInput.interactable = secInput.interactable = false;
+            GetComponent<ProceduralImage>().color = enabledColor;
         }
     }
 }
