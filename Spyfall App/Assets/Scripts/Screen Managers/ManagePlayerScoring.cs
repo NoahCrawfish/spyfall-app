@@ -47,9 +47,9 @@ public class ManagePlayerScoring : MonoBehaviour
     private void CiviliansWon(Player firstToVote) {
         foreach (var player in manageGame.Players) {
             if (player == firstToVote) {
-                player.Score += manageGame.MaxPoints[(int)ManageGame.PlayerTypes.civilian];
+                player.Score += GetMultipliedPoints(manageGame.MaxPoints[(int)ManageGame.PlayerTypes.civilian]);
             } else if (player.Role != "Spy") {
-                player.Score += manageGame.MaxPoints[(int)ManageGame.PlayerTypes.civilian] * 0.5f;
+                player.Score += GetMultipliedPoints(manageGame.MaxPoints[(int)ManageGame.PlayerTypes.civilian]) * 0.5f;
             }
         }
     }
@@ -57,9 +57,16 @@ public class ManagePlayerScoring : MonoBehaviour
     private void SpyWon(bool halfPoints) {
         foreach (var player in manageGame.Players) {
             if (player.Role == "Spy") {
-                float points = manageGame.MaxPoints[(int)ManageGame.PlayerTypes.spy];
+                float points = GetMultipliedPoints(manageGame.MaxPoints[(int)ManageGame.PlayerTypes.spy]);
                 player.Score += halfPoints ? points * 0.5f : points;
             }
         }
+    }
+
+    private int GetMultipliedPoints(int maxPoints) {
+        if (manageGame.CurrentRound == manageGame.MaxRounds) {
+            maxPoints *= manageGame.LastRoundMultiplier;
+        }
+        return maxPoints;
     }
 }

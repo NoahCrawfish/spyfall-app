@@ -64,9 +64,11 @@ public class ManageGameplayScreen : MonoBehaviour
 
     private void SetPossibleLocations() {
         string text = "";
-        foreach (var location in manageGame.Locations.SelectMany(x => x).ToList()) {
-            if (location.enabled) {
-                text += $"- {location.name}\n";
+        foreach (var locationSet in manageGame.LocationSets) {
+            foreach (var location in locationSet.Locations) {
+                if (location.enabled) {
+                    text += $"- {location.name}\n";
+                }
             }
         }
         // remove last new line

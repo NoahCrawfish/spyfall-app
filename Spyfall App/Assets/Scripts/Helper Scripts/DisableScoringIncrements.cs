@@ -15,7 +15,7 @@ public class DisableScoringIncrements : MonoBehaviour
         toggle.onValueChanged.AddListener(OnToggleChanged);
     }
 
-    private void OnToggleChanged(bool isOn) {
+    public void OnToggleChanged(bool isOn) {
         if (isOn) {
             civilianPoints.Disabled = true;
             spyPoints.Disabled = true;

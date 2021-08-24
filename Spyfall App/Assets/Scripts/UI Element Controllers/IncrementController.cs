@@ -4,6 +4,9 @@ using TMPro;
 
 public class IncrementController : MonoBehaviour
 {
+    [SerializeField] private GameObject valueRenderer;
+    [SerializeField] private GameObject plusButtonRenderer;
+    [SerializeField] private GameObject minusButtonRenderer;
     [SerializeField] private float value;
     public float Value {
         get { return value; }
@@ -27,6 +30,7 @@ public class IncrementController : MonoBehaviour
 
     private void OnEnable() {
         RefreshValue();
+        RefreshColor();
     }
 
     public void Add() {
@@ -41,25 +45,25 @@ public class IncrementController : MonoBehaviour
 
     public void RefreshValue() {
         if (!disabled) {
-            transform.Find("Value").GetChild(0).GetComponent<TextMeshProUGUI>().text = Value.ToString($"N{trailingZeros}");
+            valueRenderer.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = Value.ToString($"N{trailingZeros}");
         } else {
-            transform.Find("Value").GetChild(0).GetComponent<TextMeshProUGUI>().text = "-";
+            valueRenderer.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = "-";
         }
     }
 
     private void RefreshColor() {
         if (disabled) {
-            transform.Find("Value").GetComponent<Image>().color = disabledColor;
+            valueRenderer.GetComponent<Image>().color = disabledColor;
             transform.Find("MinusButton").GetComponent<Button>().interactable = false;
-            transform.Find("MinusButton").GetChild(0).GetComponent<TextMeshProUGUI>().color = disabledColor;
+            minusButtonRenderer.transform.GetChild(0).GetComponent<TextMeshProUGUI>().color = disabledColor;
             transform.Find("PlusButton").GetComponent<Button>().interactable = false;
-            transform.Find("PlusButton").GetChild(0).GetComponent<TextMeshProUGUI>().color = disabledColor;
+            plusButtonRenderer.transform.GetChild(0).GetComponent<TextMeshProUGUI>().color = disabledColor;
         } else {
-            transform.Find("Value").GetComponent<Image>().color = enabledColor;
+            valueRenderer.GetComponent<Image>().color = enabledColor;
             transform.Find("MinusButton").GetComponent<Button>().interactable = true;
-            transform.Find("MinusButton").GetChild(0).GetComponent<TextMeshProUGUI>().color = enabledColor;
+            minusButtonRenderer.transform.GetChild(0).GetComponent<TextMeshProUGUI>().color = enabledColor;
             transform.Find("PlusButton").GetComponent<Button>().interactable = true;
-            transform.Find("PlusButton").GetChild(0).GetComponent<TextMeshProUGUI>().color = enabledColor;
+            plusButtonRenderer.transform.GetChild(0).GetComponent<TextMeshProUGUI>().color = enabledColor;
         }
     }
 }

@@ -37,6 +37,9 @@ public class ManageWinnerScreen : MonoBehaviour
             text += $"{winner}\n";
         }
         text = text.Remove(text.Length - 1);
-        winnerText.text = text;
+
+        TextMeshProUGUI winnerTextShadow = winnerText.gameObject.transform.parent.GetChild(1).GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI winnerTextShadow2 = winnerText.gameObject.transform.parent.GetChild(0).GetComponent<TextMeshProUGUI>();
+        winnerText.text = winnerTextShadow.text = winnerTextShadow2.text = text;
     }
 }

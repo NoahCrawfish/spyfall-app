@@ -1,0 +1,3 @@
+Unlockable level packs
+Handle when no locations are enabled
+Custom locations

@@ -52,6 +52,7 @@ public class HandleButtons : MonoBehaviour
     }
 
     public void Play() {
+        manageAddPlayers.Initialize();
         uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), addPlayersScreen.GetComponent<CanvasGroup>());
     }
 
@@ -93,8 +94,17 @@ public class HandleButtons : MonoBehaviour
 
     public void DoneWithRound() {
         Screen.sleepTimeout = SleepTimeout.SystemSetting;
-        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), scoringScreen1.GetComponent<CanvasGroup>());
-        manageScoring.SetPreviousScores();
+        if (!manageGame.ScoringDisabled) {
+            uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), scoringScreen1.GetComponent<CanvasGroup>());
+            manageScoring.SetPreviousScores();
+        } else {
+            if (manageGame.CurrentRound < manageGame.MaxRounds) {
+                StartCoroutine(manageGame.StartNextRound(GetCurrentPanel()));
+            } else {
+                manageAddPlayers.Initialize();
+                uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), addPlayersScreen.GetComponent<CanvasGroup>());
+            }
+        }
     }
 
     public void SkipScoring() {
@@ -142,7 +152,7 @@ public class HandleButtons : MonoBehaviour
     public void PlayerButton(GameObject caller) {
         Player firstToVote = null;
         foreach (var player in manageGame.Players) {
-            if (player.Name == caller.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text) {
+            if (player.Name == caller.transform.Find("Renderer").GetChild(0).GetComponent<TextMeshProUGUI>().text) {
                 firstToVote = player;
             }
         }
@@ -167,6 +177,7 @@ public class HandleButtons : MonoBehaviour
     }
 
     public void GameFinishedButton() {
+        manageAddPlayers.Initialize();
         uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), addPlayersScreen.GetComponent<CanvasGroup>());
     }
 
@@ -183,13 +194,18 @@ public class HandleButtons : MonoBehaviour
     }
 
     public void Settings() {
-        manageSettings.LoadSettings();
+        manageSettings.PreviousScreen = GetCurrentPanel();
+        manageSettings.Initalize();
         uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), settingsScreen.GetComponent<CanvasGroup>());
     }
 
     public void SaveSettings() {
         manageSettings.SaveSettings();
-        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), mainMenu.GetComponent<CanvasGroup>());
+        if (manageSettings.PreviousScreen == null) {
+            uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), mainMenu.GetComponent<CanvasGroup>());
+        } else {
+            uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), manageSettings.PreviousScreen);
+        }
     }
 
     public void DefaultSettings() {
@@ -197,6 +213,15 @@ public class HandleButtons : MonoBehaviour
     }
 
     public void CancelSettings() {
-        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), mainMenu.GetComponent<CanvasGroup>());
+        if (manageSettings.PreviousScreen == null) {
+            uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), mainMenu.GetComponent<CanvasGroup>());
+        } else {
+            uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), manageSettings.PreviousScreen);
+        }
+    }
+
+    public void SetButton(GameObject caller) {
+        LocationSetController locationSet = caller.transform.parent.parent.GetComponent<LocationSetController>();
+        locationSet.Expanded = !locationSet.Expanded;
     }
 }

@@ -24,7 +24,7 @@ public class ManagePlayerScoring2 : MonoBehaviour
             if (player.Role != "Spy") {
                 GameObject button = Instantiate(playerButtonPrefab, playerList.transform);
                 button.name = buttonNames;
-                button.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = player.Name;
+                button.transform.Find("Renderer").GetChild(0).GetComponent<TextMeshProUGUI>().text = player.Name;
             }
         }
     }

@@ -39,6 +39,6 @@ public class TimerModeController : MonoBehaviour
     }
 
     public void SetText() {
-        transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = modesText[(int)Stage];
+        transform.Find("Renderer").GetChild(0).GetComponent<TextMeshProUGUI>().text = modesText[(int)Stage];
     }
 }

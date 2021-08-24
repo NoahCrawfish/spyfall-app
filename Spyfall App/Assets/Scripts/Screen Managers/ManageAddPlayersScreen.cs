@@ -10,12 +10,17 @@ public class ManageAddPlayersScreen : MonoBehaviour
     [SerializeField] private GameObject scrollList;
 
     private const float autoScrollSpeed = 0.1f;
+    private const int objectsAfterPlayersInPlayerFields = 3;
+
+    public void Initialize() {
+        scrollList.GetComponent<ScrollRect>().verticalNormalizedPosition = 1;
+    }
 
     public void AddField() {
         // create field and format in vertical layout group
         GameObject newField = Instantiate(playerFieldPrefab);
         newField.transform.SetParent(playerFields.transform, false);
-        newField.transform.SetSiblingIndex(playerFields.transform.childCount - 2);
+        newField.transform.SetSiblingIndex(playerFields.transform.childCount - (objectsAfterPlayersInPlayerFields + 1));
 
         // set name and default text
         newField.name = $"Player_{newField.transform.GetSiblingIndex() + 1}";
@@ -34,7 +39,7 @@ public class ManageAddPlayersScreen : MonoBehaviour
             // autoscroll using asymptotic averaging
             scrollRect.verticalNormalizedPosition -= scrollRect.verticalNormalizedPosition * scrollSpeed;
             previousScrollPos = scrollRect.verticalNormalizedPosition;
-            yield return new WaitForEndOfFrame();
+            yield return new WaitForFixedUpdate();
         }
     }
 

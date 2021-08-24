@@ -2,6 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Xml;
 using UnityEngine;
 using TMPro;
 
@@ -11,10 +14,12 @@ public class ManageGame : MonoBehaviour {
     [SerializeField] GameObject drawCardsScreen;
     [SerializeField] private GameObject playerFields;
     [SerializeField] private TextMeshProUGUI roundText;
+    [SerializeField] private GameObject multiplierText;
 
     private const float roundScreenTime = 1f;
     public List<Player> Players { get; private set; } = new List<Player>();
-    public List<List<Location>> Locations { get; private set; } = new List<List<Location>>();
+    //public List<List<Location>> Locations { get; private set; } = new List<List<Location>>();
+    public List<LocationSet> LocationSets { get; private set; } = new List<LocationSet>();
     public bool Paused { get; private set; }
     public DateTime PauseTime { get; private set; }
     public DateTime UnpauseTime { get; private set; }
@@ -31,6 +36,19 @@ public class ManageGame : MonoBehaviour {
     public int[] MaxPoints { get; private set; } = new int[2];
     public bool ScoringDisabled { get; private set; }
     public int LastRoundMultiplier { get; private set; }
+    public bool PaidUnlocked { get; private set; }
+
+    private string PlatformPathModifier {
+        get {
+            #if UNITY_EDITOR
+                return "Editor-";
+            #elif UNITY_IOS
+                return "iOS-";
+            #endif
+        }
+    }
+
+    private string savePath;
 
     private static readonly System.Random rand = new System.Random();
     private UITransitions uiTransitions;
@@ -57,7 +75,9 @@ public class ManageGame : MonoBehaviour {
     }
 
     private void Start() {
-        InitializeLocations();
+        savePath = $"{Application.persistentDataPath}/{PlatformPathModifier}";
+        DeleteDepreciatedSets();
+        LoadSets();
         RefreshSettings();
     }
 
@@ -83,18 +103,48 @@ public class ManageGame : MonoBehaviour {
         }
         Paused = pause;
     }
-    
 
-    // creates list of Location classes from dictionary
-    private void InitializeLocations() {
-        Locations.Clear();
-        foreach (var locationSet in LocationsAndRoles.locationSets) {
-            Locations.Add(new List<Location>());
-            foreach (KeyValuePair<string, string> entry in locationSet) {
-                Locations[Locations.Count - 1].Add(new Location(entry.Key, entry.Value));
+
+    private string StringToPath(string input) {
+        return input.ToLower().Replace(' ', '_');
+    }
+
+    private void LoadSets() {
+        foreach (string setName in LocationsAndRoles.setNames) {
+            string filePath = $"{savePath}/{StringToPath(setName)}";
+            if (File.Exists(filePath)) {
+                LocationSet locationSet = Serialization.LoadViaDataContractSerialization<LocationSet>(filePath);
+                LocationSets.Add(locationSet);
+            } else {
+                int setIndex = LocationsAndRoles.setNames.IndexOf(setName);
+                LocationSet locationSet = new LocationSet(LocationsAndRoles.setsData[setIndex], setName, setIndex >= 2 && !PaidUnlocked);
+                LocationSets.Add(locationSet);
             }
         }
+        SaveSets();
     }
+
+    public void SaveSets() {
+        foreach (var locationSet in LocationSets) {
+            string filePath = $"{savePath}/{StringToPath(locationSet.name)}";
+            Serialization.SaveViaDataContractSerialization(locationSet, filePath);
+        }
+    }
+
+    private void DeleteDepreciatedSets() {
+        foreach (string filePath in Directory.GetFiles(savePath)) {
+            string file = Path.GetFileNameWithoutExtension(filePath);
+            foreach (string setName in LocationsAndRoles.setNames) {
+                if (file == StringToPath(setName)) {
+                    goto OuterLoop;
+                }
+            }
+            File.Delete(filePath);
+        OuterLoop:
+            continue;
+        }
+    }
+
 
     public void CreatePlayerList() {
         Players.Clear();
@@ -110,16 +160,22 @@ public class ManageGame : MonoBehaviour {
         }
     }
 
-
     public void InitializeLocationsUsing() {
         LocationsUsing.Clear();
         // flattens location sets, filters out disabled locations, and assigns to a new list for the current game
-        foreach (var location in Locations.SelectMany(x => x).ToList()) {
-            if (location.enabled) {
-                LocationsUsing.Add(location);
+        foreach (var locationSet in LocationSets) {
+            foreach (var location in locationSet.Locations) {
+                if (location.enabled) {
+                    LocationsUsing.Add(location);
+                }
             }
         }
+
+        foreach (var location in LocationsUsing) {
+            Debug.Log(location.name);
+        }
     }
+
 
     public void ResetRounds() {
         CurrentRound = 0;
@@ -127,12 +183,22 @@ public class ManageGame : MonoBehaviour {
 
     public IEnumerator StartNextRound(CanvasGroup currentPanel) {
         CurrentRound += 1;
-        roundText.text = (CurrentRound < MaxRounds) ? $"Round\n{CurrentRound}" : "Final\nRound";
+        TextMeshProUGUI roundTextShadow = roundText.gameObject.transform.parent.GetChild(1).GetComponent<TextMeshProUGUI>();
+        TextMeshProUGUI roundTextShadow2 = roundText.gameObject.transform.parent.GetChild(0).GetComponent<TextMeshProUGUI>();
+        roundText.text = roundTextShadow.text = roundTextShadow2.text = (CurrentRound < MaxRounds) ? $"Round\n{CurrentRound}" : "Final\nRound";
         AssignLocationAndRoles();
 
         // briefly show round screen
         uiTransitions.CrossFadeBetweenPanels(currentPanel, roundScreen.GetComponent<CanvasGroup>());
-        yield return new WaitForSeconds(roundScreenTime);
+        if (CurrentRound == MaxRounds && LastRoundMultiplier != 1 && !ScoringDisabled) {
+            multiplierText.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = $"{LastRoundMultiplier}X SCORE MULTIPLIER!";
+            multiplierText.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = $"{LastRoundMultiplier}X SCORE MULTIPLIER!";
+            multiplierText.SetActive(true);
+            yield return new WaitForSeconds(roundScreenTime * 1.5f);
+        } else {
+            multiplierText.SetActive(false);
+            yield return new WaitForSeconds(roundScreenTime);
+        }
         uiTransitions.CrossFadeBetweenPanels(roundScreen.GetComponent<CanvasGroup>(), drawCardsScreen.GetComponent<CanvasGroup>());
 
         yield return 0; // wait till next frame so that gameobject is active
@@ -151,6 +217,7 @@ public class ManageGame : MonoBehaviour {
     }
 
 
+    // load values from playerPrefs and apply them to settings fields
     public void RefreshSettings() {
         foreach (int pref in Enum.GetValues(typeof(ManageSettingsScreen.Prefs))) {
             string prefName = Enum.GetName(typeof(ManageSettingsScreen.Prefs), (ManageSettingsScreen.Prefs)pref);
@@ -200,10 +267,15 @@ public class Player {
     }
 }
 
+[DataContract]
 public class Location {
+    [DataMember]
     public readonly string name;
+    [DataMember]
     public readonly List<string> roles;
+    [DataMember]
     public bool enabled;
+
     private static readonly System.Random rand = new System.Random();
 
     public Location(string location, string roles, bool enabled = true) {
@@ -241,6 +313,29 @@ public class Location {
             image = Resources.Load("image_not_found") as Texture2D;
         }
         return image;
+    }
+}
+
+public static class Serialization {
+    public static void SaveViaDataContractSerialization<T>(T serializableObject, string filepath) {
+        var serializer = new DataContractSerializer(typeof(T));
+        var settings = new XmlWriterSettings() {
+            Indent = true,
+            IndentChars = "\t",
+        };
+        var writer = XmlWriter.Create(filepath, settings);
+        serializer.WriteObject(writer, serializableObject);
+        writer.Close();
+    }
+
+    public static T LoadViaDataContractSerialization<T>(string filepath) {
+        var fileStream = new FileStream(filepath, FileMode.Open);
+        var reader = XmlDictionaryReader.CreateTextReader(fileStream, new XmlDictionaryReaderQuotas());
+        var serilizer = new DataContractSerializer(typeof(T));
+        T serializableObject = (T)serilizer.ReadObject(reader, true);
+        reader.Close();
+        fileStream.Close();
+        return serializableObject;
     }
 }
 

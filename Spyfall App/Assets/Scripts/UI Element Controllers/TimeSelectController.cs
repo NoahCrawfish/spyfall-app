@@ -10,10 +10,14 @@ public class TimeSelectController : MonoBehaviour
     [SerializeField] private GameObject timerModeButton;
     [SerializeField] private Color enabledColor;
     [SerializeField] private Color disabledColor;
+    [SerializeField] private Color shadowEnabledColor;
+    [SerializeField] private Color shadowDisabledColor;
+    [SerializeField] private RectTransform shadowRect;
     private const int minTimeSeconds = 30;
     private string minBeforeDisable = "01";
     private string secBeforeDisable = "00";
     private bool disabled;
+
     public bool Disabled {
         get { return disabled; }
         set {
@@ -56,11 +60,13 @@ public class TimeSelectController : MonoBehaviour
             minInput.text = secInput.text = "--";
             minInput.interactable = secInput.interactable = false;
             GetComponent<ProceduralImage>().color = disabledColor;
+            shadowRect.gameObject.GetComponent<ProceduralImage>().color = shadowDisabledColor;
         } else {
             minInput.text = minBeforeDisable;
             secInput.text = secBeforeDisable;
             minInput.interactable = secInput.interactable = true;
             GetComponent<ProceduralImage>().color = enabledColor;
+            shadowRect.gameObject.GetComponent<ProceduralImage>().color = shadowEnabledColor;
         }
     }
 }
