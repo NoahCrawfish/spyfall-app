@@ -76,6 +76,7 @@ public class ManageSettingsScreen : MonoBehaviour
 
         manageGame.RefreshSettings();
         manageGame.SaveSets();
+        manageGame.InitializeLocationsUsing();
     }
 
     public void LoadSettings() {
@@ -127,14 +128,12 @@ public class ManageSettingsScreen : MonoBehaviour
         multiplierIncrement.Value = defaultValues[(int)Prefs.LastRoundMultiplier];
         multiplierIncrement.RefreshValue();
 
+        // by default only first two sets are enabled
         int i = 0;
         foreach (Transform locationSet in locationSetsFrame.transform) {
-            bool toggleValue = i == 0 || i == 1;
-
             Toggle setToggle = locationSet.Find("SetFrame/ToggleFrame/SetToggle").GetComponent<Toggle>();
-            setToggle.isOn = toggleValue;
+            setToggle.isOn = i == 0 || i == 1;
             locationSet.GetComponent<LocationSetController>().OnSetToggle(setToggle);
-
             i++;
         }
     }

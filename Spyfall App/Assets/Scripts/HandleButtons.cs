@@ -69,12 +69,12 @@ public class HandleButtons : MonoBehaviour
     }
 
     public void Begin() {
-        // unique first-round setup
-        manageGame.CreatePlayerList();
-        manageGame.InitializeLocationsUsing();
-        manageGame.ResetRounds();
-
-        StartCoroutine(manageGame.StartNextRound(GetCurrentPanel()));
+        if (manageGame.LocationsUsing.Count > 0) {
+            // unique first-round setup
+            manageGame.CreatePlayerList();
+            manageGame.ResetRounds();
+            StartCoroutine(manageGame.StartNextRound(GetCurrentPanel()));
+        }
     }
 
     public void QuitGame() {

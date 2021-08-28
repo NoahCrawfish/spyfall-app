@@ -1,3 +1,7 @@
 Unlockable level packs
-Handle when no locations are enabled
 Custom locations
+
+Promotional popup for paid version
+MAKE VERY APPEALING
+- Video showing off new locations packs
+- Video showing off custom locations

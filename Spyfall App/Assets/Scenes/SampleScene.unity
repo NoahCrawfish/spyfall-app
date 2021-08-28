@@ -6411,6 +6411,7 @@ MonoBehaviour:
   playerFields: {fileID: 1443971763}
   playerFieldPrefab: {fileID: 612391899675199214, guid: 24f41674595e9be4284da74e8e56865b, type: 3}
   scrollList: {fileID: 2124963691}
+  beginText: {fileID: 8192100976974772421}
 --- !u!114 &496443015
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -29008,6 +29009,7 @@ GameObject:
   - component: {fileID: 8192100976974772420}
   - component: {fileID: 8192100976974772422}
   - component: {fileID: 8192100976974772421}
+  - component: {fileID: 8192100976974772428}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -29015,6 +29017,20 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &8192100976974772428
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8192100976974772427}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0fc2584fb7fbe04ea2860d392fb71e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  flashSpeed: 0
+  startingPoint: 0
 --- !u!222 &9033743965114904468
 CanvasRenderer:
   m_ObjectHideFlags: 0

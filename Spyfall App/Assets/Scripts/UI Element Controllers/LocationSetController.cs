@@ -42,7 +42,7 @@ public class LocationSetController : MonoBehaviour {
     private IEnumerator Initialize() {
         yield return new WaitForEndOfFrame();
         LoadToggleStates();
-        RefreshSetToggle();
+        RefreshSetToggle(true);
         RefreshLocationToggles();
     }
 
@@ -133,14 +133,20 @@ public class LocationSetController : MonoBehaviour {
     }
 
     // turn set toggle off if all location toggles are off
-    public void RefreshSetToggle() {
+    public void RefreshSetToggle(bool supressTween = false) {
         foreach (bool state in ToggleStates) {
             if (state) {
                 setToggle.isOn = true;
+                if (supressTween) {
+                    setToggle.GetComponent<ToggleSwitchController>().SupressTween(true);
+                }
                 return;
             }
         }
         setToggle.isOn = false;
+        if (supressTween) {
+            setToggle.GetComponent<ToggleSwitchController>().SupressTween(false);
+        }
     }
 
     private void RefreshLocationToggles(bool supressTween = false) {

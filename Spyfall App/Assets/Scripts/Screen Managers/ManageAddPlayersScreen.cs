@@ -8,6 +8,7 @@ public class ManageAddPlayersScreen : MonoBehaviour
     [SerializeField] private GameObject playerFields;
     [SerializeField] private GameObject playerFieldPrefab;
     [SerializeField] private GameObject scrollList;
+    [SerializeField] private TextMeshProUGUI beginText;
 
     private const float autoScrollSpeed = 0.1f;
     private const int objectsAfterPlayersInPlayerFields = 3;
@@ -60,5 +61,17 @@ public class ManageAddPlayersScreen : MonoBehaviour
         }
 
         Destroy(caller.transform.parent.gameObject);
+    }
+
+    public void NoLocationsEnabled() {
+        beginText.text = "NO LOCATIONS ENABLED";
+        beginText.GetComponent<FlashText>().ResetT();
+        beginText.GetComponent<FlashText>().flashSpeed = 2.5f;
+    }
+
+    public void ResetBeginButton() {
+        beginText.text = "BEGIN";
+        beginText.GetComponent<FlashText>().ResetT();
+        beginText.GetComponent<FlashText>().flashSpeed = 0;
     }
 }

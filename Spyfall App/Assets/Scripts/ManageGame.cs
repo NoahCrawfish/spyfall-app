@@ -18,7 +18,6 @@ public class ManageGame : MonoBehaviour {
 
     private const float roundScreenTime = 1f;
     public List<Player> Players { get; private set; } = new List<Player>();
-    //public List<List<Location>> Locations { get; private set; } = new List<List<Location>>();
     public List<LocationSet> LocationSets { get; private set; } = new List<LocationSet>();
     public bool Paused { get; private set; }
     public DateTime PauseTime { get; private set; }
@@ -55,6 +54,7 @@ public class ManageGame : MonoBehaviour {
     private ManageDrawCardsScreen manageDrawCards;
     private ManageGameplayScreen manageGameplay;
     private ManageSettingsScreen manageSettings;
+    private ManageAddPlayersScreen manageAddPlayers;
 
     public enum TimerModes { 
         disabled,
@@ -72,12 +72,18 @@ public class ManageGame : MonoBehaviour {
         manageDrawCards = FindObjectOfType<ManageDrawCardsScreen>();
         manageGameplay = FindObjectOfType<ManageGameplayScreen>();
         manageSettings = FindObjectOfType<ManageSettingsScreen>();
+        manageAddPlayers = FindObjectOfType<ManageAddPlayersScreen>();
     }
 
     private void Start() {
         savePath = $"{Application.persistentDataPath}/{PlatformPathModifier}";
+        if (!Directory.Exists(savePath)) {
+            Directory.CreateDirectory(savePath);
+        }
+
         DeleteDepreciatedSets();
         LoadSets();
+        InitializeLocationsUsing();
         RefreshSettings();
     }
 
@@ -132,16 +138,14 @@ public class ManageGame : MonoBehaviour {
     }
 
     private void DeleteDepreciatedSets() {
+        List<string> pathNames = LocationsAndRoles.setNames.Select(x => StringToPath(x)).ToList();
+
+        string file = "";
         foreach (string filePath in Directory.GetFiles(savePath)) {
-            string file = Path.GetFileNameWithoutExtension(filePath);
-            foreach (string setName in LocationsAndRoles.setNames) {
-                if (file == StringToPath(setName)) {
-                    goto OuterLoop;
-                }
+            file = Path.GetFileNameWithoutExtension(filePath);
+            if (!pathNames.Contains(file)) {
+                File.Delete(filePath);
             }
-            File.Delete(filePath);
-        OuterLoop:
-            continue;
         }
     }
 
@@ -162,7 +166,7 @@ public class ManageGame : MonoBehaviour {
 
     public void InitializeLocationsUsing() {
         LocationsUsing.Clear();
-        // flattens location sets, filters out disabled locations, and assigns to a new list for the current game
+        // filters out disabled locations, and assigns to a new list for the current game
         foreach (var locationSet in LocationSets) {
             foreach (var location in locationSet.Locations) {
                 if (location.enabled) {
@@ -173,6 +177,13 @@ public class ManageGame : MonoBehaviour {
 
         foreach (var location in LocationsUsing) {
             Debug.Log(location.name);
+        }
+
+        // update begin button status based on whether no locations are enabled
+        if (LocationsUsing.Count > 0) {
+            manageAddPlayers.ResetBeginButton();
+        } else {
+            manageAddPlayers.NoLocationsEnabled();
         }
     }
 
