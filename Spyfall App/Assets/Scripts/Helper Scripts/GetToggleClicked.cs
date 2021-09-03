@@ -22,14 +22,20 @@ public class GetToggleClicked : MonoBehaviour, IPointerClickHandler
         switch (name) {
             case "SetToggle":
                 GameObject set = transform.parent.parent.parent.gameObject;
-                set.GetComponent<LocationSetController>().OnSetToggle(toggle);
+                LocationSetController setController = set.GetComponent<LocationSetController>();
+                if (setController.ThisSet.locked) {
+                    Debug.Log("Paid popup");
+                    // paid pop-up, also in handlebuttons on set button click
+                } else {
+                    setController.OnSetToggle(toggle);
+                }
                 break;
 
             case "LocationToggle":
                 GameObject location = transform.parent.parent.gameObject;
                 set = transform.parent.parent.parent.parent.gameObject;
                 int index = int.Parse(location.name.Split('_')[1]);
-                set.GetComponent<LocationSetController>().LocationToggles[index].OnToggleChanged();
+                set.GetComponent<LocationSetController>().ThisSet.Locations[index].SettingsUI.OnToggleChanged();
                 break;
         }
     }

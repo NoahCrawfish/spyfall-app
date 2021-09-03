@@ -1,7 +1,19 @@
-Unlockable level packs
 Custom locations
 
 Promotional popup for paid version
 MAKE VERY APPEALING
 - Video showing off new locations packs
 - Video showing off custom locations
+
+In App Purchase
+Loading Purchase Data
+
+Build to iphone and test IOS specifics
+- is playerPrefs and xml data saved and loaded correctly
+- do in app purchases work
+- does the timer notification and screen non-dimming work
+- are they remembered after uninstall and reinstall (might not work in dev build)
+
+Tweening and visual polish + final art
+
+Sound

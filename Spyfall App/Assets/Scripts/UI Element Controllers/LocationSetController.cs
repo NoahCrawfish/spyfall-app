@@ -5,10 +5,10 @@ using UnityEngine.UI;
 using TMPro;
 
 public class LocationSetController : MonoBehaviour {
-    [SerializeField] private GameObject locationTogglePrefab;
-    [SerializeField] private Toggle setToggle;
+    [SerializeField] protected GameObject locationTogglePrefab;
+    [SerializeField] protected Toggle setToggle;
 
-    private bool expanded = false;
+    protected bool expanded = false;
     public bool Expanded {
         get => expanded;
         set {
@@ -19,85 +19,92 @@ public class LocationSetController : MonoBehaviour {
         }
     }
     public LocationSet ThisSet { get; set; }
-    public List<bool> ToggleStates { get; private set; } = new List<bool>();
-    public List<LocationToggle> LocationToggles { get; private set; } = new List<LocationToggle>();
 
-    private const float autoScrollSpeed = 0.0015f;
-    private RectTransform rectTransform;
-    private Task currentAutoscroll;
+    protected const float autoScrollSpeed = 0.0015f;
+    protected RectTransform rectTransform;
+    protected Task currentAutoscroll;
    
 
-    private void Awake() {
+    protected virtual void Awake() {
         rectTransform = GetComponent<RectTransform>();
     }
 
-    private void OnEnable() {
+    protected virtual void OnEnable() {
+        expanded = false;
         StartCoroutine(Initialize());
     }
 
-    private void OnDisable() {
+    protected virtual void OnDisable() {
         DestroyChildren();
     }
 
-    private IEnumerator Initialize() {
+    protected virtual IEnumerator Initialize() {
         yield return new WaitForEndOfFrame();
-        LoadToggleStates();
+        if (ThisSet.locked) {
+            InitializeLocked();
+        } else {
+            InitializeUnlocked();
+        }
+    }
+
+    public virtual void InitializeLocked() {
+        setToggle.enabled = false;
+    }
+
+    public virtual void InitializeUnlocked() {
+        setToggle.enabled = true;
+
+        // initialize SettingsUI for each location
+        foreach (var location in ThisSet.Locations) {
+            location.SettingsUI = new Location.SettingsUIComponent(this) {
+                toggleValue = location.enabled
+            };
+        }
+
         RefreshSetToggle(true);
         RefreshLocationToggles();
     }
 
-    private void DestroyChildren() {
-        foreach (Transform child in transform.Find("Children")) {
-            Destroy(child.gameObject);
-        }
-    }
 
-    private void LoadToggleStates() {
-        ToggleStates.Clear();
-        foreach (var location in ThisSet.Locations) {
-            ToggleStates.Add(location.enabled);
-        }
-    }
-
-    private void SetAllToggleStatesTo(bool value) {
-        int statesLength = ToggleStates.Count;
-        ToggleStates.Clear();
-        for (int i = 0; i < statesLength; i++) { 
-            ToggleStates.Add(value);
-        }
-    }
-
-    private void ExpandedChanged(bool isExpanded) {
+    public virtual void ExpandedChanged(bool isExpanded) {
         if (isExpanded) {
             int i = 0;
-            LocationToggles.Clear();
             foreach (var location in ThisSet.Locations) {
-                // create locationToggle gameObjects
+                // create prefab and set placement in heiarchy
                 GameObject locationToggle = Instantiate(locationTogglePrefab);
                 locationToggle.transform.SetParent(transform.Find("Children"), false);
                 locationToggle.transform.Find("LocationButton/Renderer").GetChild(0).GetComponent<TextMeshProUGUI>().text = location.name;
                 locationToggle.name = $"Location_{i}";
 
-                // create locationToggle class to handle visualization of ToggleStates
+                // create and assign toggle
                 Toggle toggle = locationToggle.transform.Find("ToggleFrame/LocationToggle").GetComponent<Toggle>();
-                LocationToggle toggleClass = new LocationToggle(this, toggle, i);
-                toggleClass.RefreshToggle(true);
-                LocationToggles.Add(toggleClass);
+                location.SettingsUI.AssignToggle(toggle);
+                location.SettingsUI.RefreshToggle(true); // supresses tweening on location creation
 
                 i++;
             }
 
-            GameObject scrollList = transform.root.Find("SettingsScreen/Frame/ScrollList").gameObject;
-            ScrollRect scrollRect = scrollList.GetComponent<ScrollRect>();
-            RectTransform scrollRectTransform = scrollList.GetComponent<RectTransform>();
-            currentAutoscroll = new Task(ScrollToShowSet(scrollRect, scrollRectTransform, autoScrollSpeed));
+            AutoScroll();
         } else {
             currentAutoscroll?.Stop();
             DestroyChildren();
         }
     }
 
-    private IEnumerator ScrollToShowSet(ScrollRect scrollRect, RectTransform scrollRectTransform, float scrollSpeed) {
+    protected virtual void DestroyChildren() {
+        foreach (Transform child in transform.Find("Children")) {
+            Destroy(child.gameObject);
+        }
+    }
+
+    public void AutoScroll() {
+        GameObject scrollList = transform.root.Find("SettingsScreen/Frame/ScrollList").gameObject;
+        ScrollRect scrollRect = scrollList.GetComponent<ScrollRect>();
+        RectTransform scrollRectTransform = scrollList.GetComponent<RectTransform>();
+        currentAutoscroll = new Task(ScrollToShowSet(scrollRect, scrollRectTransform, autoScrollSpeed));
+    }
+
+    protected virtual IEnumerator ScrollToShowSet(ScrollRect scrollRect, RectTransform scrollRectTransform, float scrollSpeed) {
         yield return new WaitForEndOfFrame();
         // previousScrollPos is used to test if the player has scrolled, canceling the auto scroll
         float previousScrollPos = scrollRect.verticalNormalizedPosition;
@@ -126,65 +133,41 @@ public class LocationSetController : MonoBehaviour {
         }
     }
 
+
     // set all location toggles to match set toggle
-    public void OnSetToggle(Toggle toggle) {
-        SetAllToggleStatesTo(toggle.isOn);
+    public virtual void OnSetToggle(Toggle toggle) {
+        foreach (var location in ThisSet.Locations) {
+            location.SettingsUI.toggleValue = toggle.isOn;
+        }
         RefreshLocationToggles();
     }
 
     // turn set toggle off if all location toggles are off
-    public void RefreshSetToggle(bool supressTween = false) {
-        foreach (bool state in ToggleStates) {
-            if (state) {
-                setToggle.isOn = true;
-                if (supressTween) {
-                    setToggle.GetComponent<ToggleSwitchController>().SupressTween(true);
-                }
-                return;
+    public virtual void RefreshSetToggle(bool supressTween = false) {
+        bool turnOn = false;
+        foreach (var location in ThisSet.Locations) {
+            turnOn |= location.SettingsUI.toggleValue;
+        }
+        setToggle.isOn = turnOn;
+
+        if (supressTween) {
+            setToggle.GetComponent<ToggleSwitchController>().SupressTween(setToggle.isOn);
+        }
+    }
+
+    protected virtual void RefreshLocationToggles(bool supressTween = false) {
+        if (Expanded) {
+            foreach (var location in ThisSet.Locations) {
+                location.SettingsUI.RefreshToggle(supressTween);
             }
         }
-        setToggle.isOn = false;
-        if (supressTween) {
-            setToggle.GetComponent<ToggleSwitchController>().SupressTween(false);
-        }
     }
 
-    private void RefreshLocationToggles(bool supressTween = false) {
-        foreach (var locationToggle in LocationToggles) {
-            locationToggle.RefreshToggle(supressTween);
-        }
-    }
-
-    public void SaveLocationStates() {
-        int i = 0;
-        foreach (bool state in ToggleStates) {
-            ThisSet.Locations[i].enabled = state;
-            i++;
-        }
-    }
-}
-
-// visual representation of ToggleStates list
-public class LocationToggle {
-    public readonly Toggle toggle;
-    public readonly int locationIndex;
-    private readonly LocationSetController parent;
-
-    public LocationToggle(LocationSetController parent, Toggle toggle, int locationIndex) {
-        this.toggle = toggle;
-        this.locationIndex = locationIndex;
-        this.parent = parent;
-    }
-
-    public void OnToggleChanged() {
-        parent.ToggleStates[locationIndex] = toggle.isOn;
-        parent.RefreshSetToggle();
-    }
-
-    public void RefreshToggle(bool supressTween = false) {
-        toggle.isOn = parent.ToggleStates[locationIndex];
-        if (supressTween) {
-            toggle.GetComponent<ToggleSwitchController>().SupressTween(parent.ToggleStates[locationIndex]);
+    public virtual void SaveLocationStates() {
+        if (!ThisSet.locked) {
+            foreach (var location in ThisSet.Locations) {
+                location.enabled = location.SettingsUI.toggleValue;
+            }
         }
     }
 }

@@ -19,6 +19,7 @@ public class ManageGame : MonoBehaviour {
     private const float roundScreenTime = 1f;
     public List<Player> Players { get; private set; } = new List<Player>();
     public List<LocationSet> LocationSets { get; private set; } = new List<LocationSet>();
+    public CustomLocationSet CustomSet { get; private set; }
     public bool Paused { get; private set; }
     public DateTime PauseTime { get; private set; }
     public DateTime UnpauseTime { get; private set; }
@@ -35,7 +36,7 @@ public class ManageGame : MonoBehaviour {
     public int[] MaxPoints { get; private set; } = new int[2];
     public bool ScoringDisabled { get; private set; }
     public int LastRoundMultiplier { get; private set; }
-    public bool PaidUnlocked { get; private set; }
+    public bool PaidUnlocked { get; private set; } // need to load this data directly from the app store on launch, to retain purchases in case of uninstalling
 
     private string PlatformPathModifier {
         get {
@@ -110,31 +111,54 @@ public class ManageGame : MonoBehaviour {
         Paused = pause;
     }
 
+    // dev debug
+    private void Update() {
+        if (Input.GetKeyDown(KeyCode.P) && !PaidUnlocked) {
+            UnlockFullVersion();
+        }
+    }
+
 
     private string StringToPath(string input) {
         return input.ToLower().Replace(' ', '_');
     }
 
     private void LoadSets() {
+        string filePath;
         foreach (string setName in LocationsAndRoles.setNames) {
-            string filePath = $"{savePath}/{StringToPath(setName)}";
+            filePath = $"{savePath}/{StringToPath(setName)}";
             if (File.Exists(filePath)) {
                 LocationSet locationSet = Serialization.LoadViaDataContractSerialization<LocationSet>(filePath);
                 LocationSets.Add(locationSet);
             } else {
+                // only first two sets are available, unless the paid version has been unlocked
                 int setIndex = LocationsAndRoles.setNames.IndexOf(setName);
                 LocationSet locationSet = new LocationSet(LocationsAndRoles.setsData[setIndex], setName, setIndex >= 2 && !PaidUnlocked);
                 LocationSets.Add(locationSet);
             }
         }
+
+        // load custom set
+        filePath = $"{savePath}/{StringToPath(LocationsAndRoles.customSetName)}";
+        CustomSet = File.Exists(filePath) ?
+            Serialization.LoadViaDataContractSerialization<CustomLocationSet>(filePath) : new CustomLocationSet(!PaidUnlocked);
+
         SaveSets();
     }
 
     public void SaveSets() {
+        string filePath;
         foreach (var locationSet in LocationSets) {
-            string filePath = $"{savePath}/{StringToPath(locationSet.name)}";
+            filePath = $"{savePath}/{StringToPath(locationSet.name)}";
             Serialization.SaveViaDataContractSerialization(locationSet, filePath);
         }
+
+        SaveCustomSet();
+    }
+
+    public void SaveCustomSet() {
+        string filePath = $"{savePath}/{StringToPath(LocationsAndRoles.customSetName)}";
+        Serialization.SaveViaDataContractSerialization(CustomSet, filePath);
     }
 
     private void DeleteDepreciatedSets() {
@@ -143,7 +167,8 @@ public class ManageGame : MonoBehaviour {
         string file = "";
         foreach (string filePath in Directory.GetFiles(savePath)) {
             file = Path.GetFileNameWithoutExtension(filePath);
-            if (!pathNames.Contains(file)) {
+            if (!pathNames.Contains(file) && file != StringToPath(LocationsAndRoles.customSetName)) {
+                Debug.Log($"Deleted {filePath}");
                 File.Delete(filePath);
             }
         }
@@ -167,7 +192,7 @@ public class ManageGame : MonoBehaviour {
     public void InitializeLocationsUsing() {
         LocationsUsing.Clear();
         // filters out disabled locations, and assigns to a new list for the current game
-        foreach (var locationSet in LocationSets) {
+        foreach (var locationSet in LocationSets.Concat(new List<CustomLocationSet> { CustomSet })) {
             foreach (var location in locationSet.Locations) {
                 if (location.enabled) {
                     LocationsUsing.Add(location);
@@ -265,6 +290,16 @@ public class ManageGame : MonoBehaviour {
                 break;
         }
     }
+
+    public void UnlockFullVersion() {
+        PaidUnlocked = true;
+        foreach (var locationSet in LocationSets) {
+            locationSet.locked = false;
+        }
+        CustomSet.locked = false;
+        manageSettings.SaveLocationStatesAndSet();
+        StartCoroutine(manageSettings.RefreshAllSets());
+    }
 }
 
 public class Player {
@@ -275,55 +310,6 @@ public class Player {
 
     public Player(string name) {
         Name = name;
-    }
-}
-
-[DataContract]
-public class Location {
-    [DataMember]
-    public readonly string name;
-    [DataMember]
-    public readonly List<string> roles;
-    [DataMember]
-    public bool enabled;
-
-    private static readonly System.Random rand = new System.Random();
-
-    public Location(string location, string roles, bool enabled = true) {
-        name = location;
-        this.roles = roles.Replace(", ", ",").Split(',').ToList();
-        this.enabled = enabled;
-    }
-
-    // shuffles roles and assigns in order to players, reshuffles when needed
-    public List<Player> AssignRolesToPlayers(List<Player> players) {
-        int i = 0;
-        roles.Shuffle();
-        roles.Insert(rand.Next(Mathf.Min(players.Count, roles.Count)), "Spy");
-        foreach (var player in players) {
-            player.Role = roles[i];
-            if (roles[i] == "Spy") {
-                roles.Remove("Spy");
-                i--;
-            }
-            if (i < roles.Count - 1) {
-                i++;
-            } else {
-                i = 0;
-                roles.Shuffle();
-            }
-        }
-        return players;
-    }
-
-    // gets location image from resources folder, if none is found it pulls an "image not found" placeholder
-    public Texture2D GetImage() {
-        string searchFor = $"spr_{name.ToLower().Replace(" ", "_")}";
-        Texture2D image = Resources.Load(searchFor) as Texture2D;
-        if (image == null) {
-            image = Resources.Load("image_not_found") as Texture2D;
-        }
-        return image;
     }
 }
 
@@ -353,15 +339,17 @@ public static class Serialization {
 public static class Extensions {
     private static readonly System.Random rand = new System.Random();
 
-    public static void Shuffle<T>(this IList<T> list) {
-        int n = list.Count;
+    public static List<T> Shuffle<T>(this IList<T> list) {
+        List<T> newList = new List<T>(list);
+        int n = newList.Count;
         while (n > 1) {
             n--;
             int k = rand.Next(n + 1);
-            T value = list[k];
-            list[k] = list[n];
-            list[n] = value;
+            T value = newList[k];
+            newList[k] = newList[n];
+            newList[n] = value;
         }
+        return newList;
     }
 
     public static bool ToBool(this int i) {

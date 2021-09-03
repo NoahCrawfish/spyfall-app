@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -64,7 +65,7 @@ public class ManageGameplayScreen : MonoBehaviour
 
     private void SetPossibleLocations() {
         string text = "";
-        foreach (var locationSet in manageGame.LocationSets) {
+        foreach (var locationSet in manageGame.LocationSets.Concat(new List<CustomLocationSet>{ manageGame.CustomSet }).ToList()) {
             foreach (var location in locationSet.Locations) {
                 if (location.enabled) {
                     text += $"- {location.name}\n";

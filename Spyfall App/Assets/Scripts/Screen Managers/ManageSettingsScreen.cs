@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEditor;
 using TMPro;
 
 public class ManageSettingsScreen : MonoBehaviour
@@ -17,13 +18,14 @@ public class ManageSettingsScreen : MonoBehaviour
     [SerializeField] private DisableScoringIncrements disableScoringIncrements;
 
     [SerializeField] private GameObject locationSetPrefab;
-    [SerializeField] private GameObject locationTogglePrefab;
+    [SerializeField] private GameObject customLocationSetPrefab;
     [SerializeField] private GameObject locationSetsFrame;
 
     [SerializeField] private ScrollRect scrollRect;
 
     private ManageGame manageGame;
     public CanvasGroup PreviousScreen { get; set; }
+    public CustomLocationSetController CustomSetController { get; private set; }
 
     public enum Prefs {
         Rounds,
@@ -69,14 +71,17 @@ public class ManageSettingsScreen : MonoBehaviour
             i++;
         }
 
+        SaveLocationStatesAndSet();
+        manageGame.RefreshSettings();
+        manageGame.InitializeLocationsUsing();
+    }
+
+    public void SaveLocationStatesAndSet() {
         // update "enabled" field for Location classes
         foreach (Transform locationSet in locationSetsFrame.transform) {
             locationSet.GetComponent<LocationSetController>().SaveLocationStates();
         }
-
-        manageGame.RefreshSettings();
         manageGame.SaveSets();
-        manageGame.InitializeLocationsUsing();
     }
 
     public void LoadSettings() {
@@ -141,14 +146,34 @@ public class ManageSettingsScreen : MonoBehaviour
     public void CreateLocationSets() {
         if (locationSetsFrame.transform.childCount == 0) {
             foreach (var locationSet in manageGame.LocationSets) {
-                // create locationSet
-                GameObject set = Instantiate(locationSetPrefab);
-                set.transform.SetParent(locationSetsFrame.transform, false);
-                set.transform.Find("SetFrame/SetButton/Renderer").GetChild(0).GetComponent<TextMeshProUGUI>().text = locationSet.name;
-                set.name = $"Set_{set.transform.GetSiblingIndex() + 1}";
-                // create reference to the locationSet stored in ManageGame
-                set.GetComponent<LocationSetController>().ThisSet = locationSet;
+                CreateLocationSet(locationSet);
             }
+            CreateLocationSet(manageGame.CustomSet, true);
+        }
+    }
+
+    private void CreateLocationSet(LocationSet locationSet, bool isCustom = false) {
+        // create locationSet
+        GameObject set = isCustom ? Instantiate(customLocationSetPrefab) : Instantiate(locationSetPrefab);
+        set.transform.SetParent(locationSetsFrame.transform, false);
+        set.transform.Find("SetFrame/SetButton/Renderer").GetChild(0).GetComponent<TextMeshProUGUI>().text = locationSet.name;
+        set.name = $"Set_{set.transform.GetSiblingIndex() + 1}";
+
+        var controller = isCustom ? set.GetComponent<CustomLocationSetController>() : set.GetComponent<LocationSetController>();
+        controller.ThisSet = locationSet;
+
+        if (isCustom) {
+            CustomSetController = (CustomLocationSetController)controller;
+        }
+    }
+
+    public IEnumerator RefreshAllSets() {
+        foreach (Transform locationSet in locationSetsFrame.transform) {
+            locationSet.gameObject.SetActive(false);
+        }
+        yield return 0;
+        foreach (Transform locationSet in locationSetsFrame.transform) {
+            locationSet.gameObject.SetActive(true);
         }
     }
 }

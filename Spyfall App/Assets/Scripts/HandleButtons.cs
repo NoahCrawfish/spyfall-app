@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEditor;
 using TMPro;
 
 public class HandleButtons : MonoBehaviour
@@ -213,6 +214,7 @@ public class HandleButtons : MonoBehaviour
     }
 
     public void CancelSettings() {
+        manageSettings.CustomSetController?.DeleteNewCustomLocations();
         if (manageSettings.PreviousScreen == null) {
             uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), mainMenu.GetComponent<CanvasGroup>());
         } else {
@@ -222,6 +224,11 @@ public class HandleButtons : MonoBehaviour
 
     public void SetButton(GameObject caller) {
         LocationSetController locationSet = caller.transform.parent.parent.GetComponent<LocationSetController>();
-        locationSet.Expanded = !locationSet.Expanded;
+        if (locationSet.ThisSet.locked) {
+            Debug.Log("Paid popup");
+            // show paid pop-up, also in GetToggleClicked script
+        } else {
+            locationSet.Expanded = !locationSet.Expanded;
+        }
     }
 }

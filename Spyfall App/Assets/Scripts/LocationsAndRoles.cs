@@ -10,9 +10,9 @@ public static class LocationsAndRoles {
             { "Cemetery", "Great-Great Grandfather, Great-Great Grandmother, Funeral Director, Widow, Widower, Skeleton, Grave Robber, Ghost Hunter" },
             { "Church", "Priest, Pope, Bored Kid, Youth Pastor, Crying Baby, Worship Leader, God, Communion Bread Lover" },
             { "Gas Station", "Cashier, Customer, Manager, Trucker, Thief, Car Wash Attendant, Snack Hoarder, Gotta Pee" },
-            { "Gym", "Gym Bro, Trying to Lose Weight, Personal Trainer, Athlete, Nutritionist, Front Desk Staff, Karen, Bodybuilder" },
+            { "Gym", "Gym Bro, Newbie, Personal Trainer, Athlete, Nutritionist, Front Desk Staff, Karen, Bodybuilder" },
             { "Harbor", "Sailor, Yacht Salesman, Fisherman, Oil Driller, Captain, Marine Biologist, Mechanic, Lost Child" },
-            { "Hospital", "Nurse, Doctor, Surgeon, Medical Student, Physical Therapist, Social Worker, Radiologist, Diabetic" },
+            { "Hospital", "Nurse, Doctor, Surgeon, Medical Student, Physical Therapist, Social Worker, Patient, Diabetic" },
             { "Library", "Librarian, Student, Fell Asleep Studying, Bookworm, Old Lady, Old Man, Loudmouth, Cat" },
             { "Prison", "Guard, Warden, Murderer, Drug Dealer, Innocent, Probation Officer, Inside Trader, Escapee" },
             { "Restaurant", "Chef, Gordan Ramsay, Waiter, Pastry Chef, Food Critic, Angry Customer, Dishwasher, Musician" },
@@ -55,7 +55,7 @@ public static class LocationsAndRoles {
             { "Cave", "Scout, Cave Sketcher, Surveyor, Headlamp Manufacturer, Tour Guide, Bat, Navigator, Spelunker" },
             { "Mount Everest", "Marathoner, Rock Climber, Physician, Sherpa Guide, Medic, Gear Manager, Underprepared, Red Bull Athlete" },
             { "Niagara Falls", "Plein Air Artist, Photographer, Daredevil, Man Proposing, Kayaker, Scared Of Water, Videographer, Salmon" },
-            { "Sahara Desert", "Hunter, Date Farmer, Camel Herder, Tradesman, Genie, Nomad, Sand Surfer, Scorpion" },
+            { "Sahara Desert", "Dehydrated Traveler, Date Farmer, Camel Guide, Tradesman, Genie, Nomad, Dune Surfer, Scorpion" },
             { "Tropical Island", "Resort Manager, Cliff Diver, Coconut Gatherer, Fire Juggler, Machete Salesman, Wakeboarder, Limbo Expert, Tourist" },
             { "Volcano", "Geologist, Rock Collector, Lava Dragon, Sacrificial Offering, Pompeii Resident, Science Fair Judge, Fossil, Backpacker" }
         },
@@ -64,20 +64,20 @@ public static class LocationsAndRoles {
             { "Eiffel Tower", "Aspiring Architect, Repairman, American Tourist, Parisian, Newlywed, Maintenance, Street Vendor, Translator" },
             { "Great Wall of China", "Chinese General, Long Distance Runner, Chinese Local, Mongolian Soldier, Archer, Swordsman, Tourist, Guard" },
             { "Leaning Tower of Pisa", "Confused Pizza Lover, Tour Guide, Jenga Enthusiast, Italian, Photographer, Unreliable Architect, Bell Ringer, Restorationist" },
-            { "Pyramids", "Tomb Raider, Mummy, King Tut, Cleopatra, Embalmer, Pyramid Scheme Scammer, Illuminati Member, Slave Laborer" },
+            { "Pyramids", "Tomb Raider, Mummy, King Tut, Cleopatra, Embalmer, Pyramid Scheme Scammer, Illuminati Member, Laborer" },
             { "Statue of Liberty", "Ferry Captain, New Yorker, French Tourist, Gift Shop Cashier, Living Statue, Ice Cream Vendor, Street Musician, Pigeon" },
             { "Great Barrier Reef", "Manta Ray, Sea Turtle, Oil Baron, Humpback Whale, Clownfish, Sea Anemone, Whale Watcher, Snorkeler" },
-            { "Taj Mahal", "Landscaper, Instagram Influencer, Can't Find Parking, Tomb Maintenance, Sculptor, Indian Tourist, Muslim, Pool Cleaner" }
+            { "Taj Mahal", "Landscaper, Instagram Influencer, Can't Find Parking, Tomb Maintenance, Sculptor, Indian Tourist, Window Washer, Pool Cleaner" }
         },
         new Dictionary<string, string>() {
             { "Area 51", "Conspiracy Theorist, Military Sniper, President, UFO Designer, Alien, Gate Guard, Alien Weapons Engineer, Extraterrestrial Communications" },
             { "Bermuda Triangle", "Shipwrecked Sailor, Crashed Pilot, Stranded On A Raft, Cthulhu, Kraken, Mermaid, Tropical Storm Chaser, Lost Snorkeler" },
             { "Flat Earth", "Ice Wall Guard, Earth Dome Cleaner, Moon Track Engineer, Star Projectionist, Broke Globe Craftsman, \"Astronaut\", Sun Track Engineer, Round Earth Believer" },
-            { "Heaven", "God, Jesus, Angel, Gate Opener, Cloud Fluffer, Earth Watcher, Throne Duster, Going To Hell" },
-            { "Moon Colony", "Solar Panel Installer, Rover Driver, On Vacation, Make-A-Wish Kid, Diplomat, Water Purifier, Researcher, Alien Parasite" },
+            { "Heaven", "God, Jesus, Angel, Gate Opener, Cloud Fluffer, Earth Watcher, Throne Duster, Rejected Angel" },
+            { "Moon Colony", "Solar Panel Installer, Rover Driver, On Vacation, Engineer, Diplomat, Jeff Bezos, Researcher, Alien Parasite" },
             { "Pirate Ship", "First Mate, Blackbeard, Cook, Gunner, Navigator, Lookout, Prisoner, Pet Parrot" },
-            { "Santa's Workshop", "Santa Claus, Box Maker, Elf Outcast, Present Wrapper, Toy Painter, Lead Toy Designer, Reindeer, Ms. Claus" },
-            { "Time Machine", "Hitchhiking Dinosaur, Confused Caveman, Lead Designer, Timeline Manager, Researcher, DeLorean Engineer, Switch Operator, Traveler" }
+            { "Santa's Workshop", "Santa Claus, Sleigh Loader, Elf Outcast, Present Wrapper, Toy Painter, Lead Toy Designer, Reindeer, Ms. Claus" },
+            { "Time Machine", "Hitchhiking Dinosaur, Confused Caveman, Lead Designer, Timeline Manager, Researcher, DeLorean Engineer, Switch Operator, Time Traveler" }
         }
     };
 
@@ -89,23 +89,6 @@ public static class LocationsAndRoles {
         "Monuments",
         "Fantasy"
     };
-}
 
-[DataContract]
-public class LocationSet {
-    [DataMember]
-    public readonly string name;
-    [DataMember]
-    public readonly bool locked;
-    [DataMember]
-    public List<Location> Locations { get; private set; } = new List<Location>();
-
-    public LocationSet(Dictionary<string, string> locationsAndRoles, string name, bool locked) {
-        this.name = name;
-        this.locked = locked;
-
-        foreach (KeyValuePair<string, string> entry in locationsAndRoles) {
-            Locations.Add(new Location(entry.Key, entry.Value, !locked));
-        }
-    }
+    public static string customSetName = "CUSTOM LOCATIONS";
 }
