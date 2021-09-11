@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Linq;
@@ -8,27 +9,36 @@ using UnityEngine.UI;
 [KnownType(typeof(CustomLocation))]
 public class Location {
     [DataMember]
-    public readonly string name;
+    protected string name;
     [DataMember]
-    public readonly List<string> roles;
+    public string Name { get => name ?? "NEW CUSTOM LOCATION"; set => name = value; }
+
+    [DataMember]
+    protected List<string> roles;
+    [DataMember]
+    public List<string> Roles { get => roles ?? new List<string> { "Role 1", "Role 2", "Role 3" }; set => roles = value; }
+
     [DataMember]
     public bool enabled;
 
     public SettingsUIComponent SettingsUI { get; set; }
 
+    [DataMember]
     private static readonly System.Random rand = new System.Random();
 
     public Location(string location, string roles, bool enabled = true) {
-        name = location;
-        this.roles = roles.Replace(", ", ",").Split(',').ToList();
+        Name = location;
+        if (roles != null) {
+            Roles = roles.Replace(", ", ",").Split(',').ToList();
+        }
         this.enabled = enabled;
     }
 
     // makes of shuffled list of roles (repeating shuffled when necessary) for players with a spy inserted
     public List<Player> AssignRolesToPlayers(List<Player> players) {
-        List<string> repeatedRoles = roles.Shuffle();
+        List<string> repeatedRoles = Roles.Shuffle();
         while (repeatedRoles.Count < players.Count - 1) {
-            repeatedRoles = repeatedRoles.Concat(roles.Shuffle()).ToList();
+            repeatedRoles = repeatedRoles.Concat(Roles.Shuffle()).ToList();
         }
         repeatedRoles = repeatedRoles.GetRange(0, players.Count - 1);
         repeatedRoles.Insert(rand.Next(repeatedRoles.Count + 1), "Spy");
@@ -44,7 +54,7 @@ public class Location {
 
     // gets location image from resources folder, if none is found it pulls an "image not found" placeholder
     public virtual Texture2D GetImage() {
-        string searchFor = $"spr_{name.ToLower().Replace(" ", "_")}";
+        string searchFor = $"spr_{Name.ToLower().Replace(" ", "_")}";
         Texture2D image = Resources.Load(searchFor) as Texture2D;
         if (image == null) {
             image = Resources.Load("image_not_found") as Texture2D;
@@ -57,8 +67,9 @@ public class Location {
         public bool toggleValue;
         protected readonly LocationSetController parent;
 
-        public SettingsUIComponent(LocationSetController parent, Toggle toggle = null) {
+        public SettingsUIComponent(LocationSetController parent, bool toggleValue, Toggle toggle = null) {
             this.parent = parent;
+            this.toggleValue = toggleValue;
             if (toggle != null) {
                 AssignToggle(toggle);
             }
@@ -85,16 +96,62 @@ public class Location {
 [DataContract]
 public class CustomLocation : Location {
     [DataMember]
-    public readonly byte[] image;
+    public byte[] Image { get; private set; }
+    [DataMember]
+    public bool JustAdded { get; set; } = true;
+    [DataMember]
+    public bool Deleted { get; set; }
 
-    public CustomLocation(string location, string roles, Texture2D image, bool enabled = true) : base(location, roles, enabled) {
-        this.image = ImageConversion.EncodeToPNG(image);
+    public CustomLocation() : base(null, null, true) { }
+
+    public void SetImage(Texture2D image) {
+        Image = ImageConversion.EncodeToPNG(image);
+    }
+    public void SetImage(byte[] image) {
+        Image = image;
     }
 
     public override Texture2D GetImage() {
         Texture2D tex = new Texture2D(2, 2);
-        tex.LoadImage(image);
-        return image == null ? Resources.Load("custom_location_default") as Texture2D : tex;
+        tex.LoadImage(Image);
+        return Image == null ? Resources.Load("custom_location_default") as Texture2D : tex;
+    }
+
+    public class CustomSettingsUIComponent : SettingsUIComponent {
+        public byte[] TempImage { get; protected set; }
+
+        protected string tempName;
+        public string TempName { get => tempName ?? "NEW CUSTOM LOCATION"; set => tempName = value; }
+
+        protected List<string> tempRoles;
+        public List<string> TempRoles { get => tempRoles ?? new List<string> { "Role 1", "Role 2", "Role 3" }; set => tempRoles = value; }
+
+        public CustomSettingsUIComponent(CustomLocation location, LocationSetController parent, bool toggleValue, Toggle toggle = null) : base(parent, toggleValue, toggle) {
+            TempImage = location.Image;
+            // assign by backing field to preserve null values
+            TempName = location.name;
+            TempRoles = location.roles;
+        }
+
+        public void SetTempImage(Texture2D image) {
+            TempImage = ImageConversion.EncodeToPNG(image);
+        }
+        public void SetTempImage(byte[] image) {
+            TempImage = image;
+        }
+
+        public Texture2D GetTempImage() {
+            Texture2D tex = new Texture2D(2, 2);
+            tex.LoadImage(TempImage);
+            return TempImage == null ? Resources.Load("custom_location_default") as Texture2D : tex;
+        }
+
+        public string GetRealName() {
+            return tempName;
+        }
+        public List<string> GetRealRoles() {
+            return tempRoles;
+        }
     }
 }
 
@@ -125,8 +182,8 @@ public class LocationSet {
 public class CustomLocationSet : LocationSet {
     public CustomLocationSet(bool locked) : base(null, LocationsAndRoles.customSetName, locked) { }
 
-    public void AddLocation(CustomLocation location) {
-        Locations.Add(location);
+    public void AddLocation(CustomLocation newLocation) {
+        Locations.Add(newLocation);
     }
 
     public void RemoveLocation(CustomLocation location) {

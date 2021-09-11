@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI.ProceduralImage;
+using UnityEngine.UI;
 
 public class MoveButtonPress : MonoBehaviour, ISelectHandler, IDeselectHandler, IPointerDownHandler, IPointerUpHandler {
     RectTransform rectTransform;
@@ -13,10 +14,13 @@ public class MoveButtonPress : MonoBehaviour, ISelectHandler, IDeselectHandler, 
     [SerializeField] private Color pressedColor;
     [SerializeField] private bool holdDownWhenSelected;
 
+    private Selectable selectable;
+
     private void Awake() {
         rectTransform = transform.Find("Renderer").GetComponent<RectTransform>();
         shadowRect = transform.Find("Shadow").GetComponent<RectTransform>();
         rendererImage = transform.Find("Renderer").GetComponent<ProceduralImage>();
+        selectable = GetComponent<Selectable>();
     }
 
     private void Start() {
@@ -25,25 +29,25 @@ public class MoveButtonPress : MonoBehaviour, ISelectHandler, IDeselectHandler, 
     }
 
     public void OnPointerDown(PointerEventData eventData) {
-        if (!holdDownWhenSelected) {
+        if (!holdDownWhenSelected && selectable.interactable) {
             Down();
         }
     }
 
     public void OnPointerUp(PointerEventData eventData) {
-        if (!holdDownWhenSelected) {
+        if (!holdDownWhenSelected && selectable.interactable) {
             Up();
         }
     }
 
     public void OnSelect(BaseEventData eventData) {
-        if (holdDownWhenSelected) {
+        if (holdDownWhenSelected && selectable.interactable) {
             Down();
         }
     }
 
     public void OnDeselect(BaseEventData eventData) {
-        if (holdDownWhenSelected) {
+        if (holdDownWhenSelected && selectable.interactable) {
             Up();
         }
     }

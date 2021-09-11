@@ -25,7 +25,6 @@ public class ManageSettingsScreen : MonoBehaviour
 
     private ManageGame manageGame;
     public CanvasGroup PreviousScreen { get; set; }
-    public CustomLocationSetController CustomSetController { get; private set; }
 
     public enum Prefs {
         Rounds,
@@ -161,10 +160,6 @@ public class ManageSettingsScreen : MonoBehaviour
 
         var controller = isCustom ? set.GetComponent<CustomLocationSetController>() : set.GetComponent<LocationSetController>();
         controller.ThisSet = locationSet;
-
-        if (isCustom) {
-            CustomSetController = (CustomLocationSetController)controller;
-        }
     }
 
     public IEnumerator RefreshAllSets() {

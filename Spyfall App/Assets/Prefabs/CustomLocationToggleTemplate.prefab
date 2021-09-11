@@ -941,8 +941,9 @@ GameObject:
   - component: {fileID: 3920971259947070406}
   - component: {fileID: 2157797209025154939}
   - component: {fileID: 3496581499867170642}
+  - component: {fileID: 2524950267179226531}
   m_Layer: 5
-  m_Name: EditButton
+  m_Name: EditCustomLocationButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1029,10 +1030,22 @@ MonoBehaviour:
     m_SelectedTrigger: Selected
     m_DisabledTrigger: Disabled
   m_Interactable: 1
-  m_TargetGraphic: {fileID: 0}
+  m_TargetGraphic: {fileID: 3496581499867170642}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 11500000, guid: 18a8809c5d66b7c4aa30ea39bbbddb42, type: 3}
+        m_TargetAssemblyTypeName: 
+        m_MethodName: 
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &3496581499867170642
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1063,3 +1076,16 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &2524950267179226531
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4342817079417218500}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1bb11461a8ac1e642aed55bf1934655f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  sendGameObject: 1

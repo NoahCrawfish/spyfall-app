@@ -1,18 +1,31 @@
 using System.Collections.Generic;
 using System.Collections;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
 public class CustomLocationSetController : LocationSetController {
     [SerializeField] private GameObject addCustomLocationPrefab;
-    private int startingLocationsCount;
+    public List<Location> NotDeletedLocations => ThisSet.Locations.Where(location => !((CustomLocation)location).Deleted).ToList();
+    private HandleButtons handleButtons;
+    private UITransitions uiTransitions;
 
     protected override void Awake() {
+        handleButtons = FindObjectOfType<HandleButtons>();
+        uiTransitions = FindObjectOfType<UITransitions>();
         base.Awake();
     }
 
     protected override void OnEnable() {
+        if (uiTransitions.PreviousScreen != null) {
+            if (uiTransitions.PreviousScreen.gameObject.name == "CustomizeLocationScreen") {
+                expanded = true;
+                ExpandedChanged(expanded, doAutoScroll: false);
+                StartCoroutine(Initialize());
+                return;
+            }
+        }
         base.OnEnable();
     }
 
@@ -26,29 +39,34 @@ public class CustomLocationSetController : LocationSetController {
 
     public override void InitializeUnlocked() {
         setToggle.transform.parent.gameObject.SetActive(true);
-        startingLocationsCount = ThisSet.Locations.Count;
-        base.InitializeUnlocked();
+
+        setToggle.enabled = true;
+        ThisSet.Locations.ForEach(location => location.SettingsUI ??= new CustomLocation.CustomSettingsUIComponent((CustomLocation)location, this, location.enabled));
+        RefreshSetToggle(true);
     }
 
-    public override void ExpandedChanged(bool isExpanded) {
+    protected CustomLocation.CustomSettingsUIComponent GetCustomSettingsUI(Location location) {
+        return (CustomLocation.CustomSettingsUIComponent)((CustomLocation)location).SettingsUI;
+    }
+
+    public override void ExpandedChanged(bool isExpanded, bool doAutoScroll = true) {
         if (isExpanded) {
-            int i = 0;
-            foreach (CustomLocation customLocation in ThisSet.Locations) {
+            foreach (CustomLocation customLocation in ThisSet.Locations.Where(location => !((CustomLocation)location).Deleted)) {
                 // create prefab and set placement in heiarchy
                 GameObject customLocationToggle = Instantiate(locationTogglePrefab);
                 customLocationToggle.transform.SetParent(transform.Find("Children"), false);
-                customLocationToggle.transform.Find("LocationButton/Renderer").GetChild(0).GetComponent<TextMeshProUGUI>().text = customLocation.name;
-                customLocationToggle.name = $"CustomLocation_{i}";
+                customLocationToggle.transform.Find("LocationButton/Renderer").GetChild(0).GetComponent<TextMeshProUGUI>().text = GetCustomSettingsUI(customLocation).TempName;
+                customLocationToggle.name = $"CustomLocation_{ThisSet.Locations.IndexOf(customLocation)}";
 
                 Toggle toggle = customLocationToggle.transform.Find("ToggleFrame/LocationToggle").GetComponent<Toggle>();
                 customLocation.SettingsUI.AssignToggle(toggle);
                 customLocation.SettingsUI.RefreshToggle(true); // supresses tweening on location creation
-
-                i++;
             }
 
             CreateAddButton();
-            AutoScroll();
+            if (doAutoScroll) {
+                AutoScroll();
+            }
         } else {
             currentAutoscroll?.Stop();
             DestroyChildren();
@@ -66,34 +84,72 @@ public class CustomLocationSetController : LocationSetController {
     }
 
     public void AddCustomLocation() {
+        CustomLocation customLocation = new CustomLocation();
+        ((CustomLocationSet)ThisSet).AddLocation(customLocation);
+        customLocation.SettingsUI = new CustomLocation.CustomSettingsUIComponent(customLocation, this, customLocation.enabled);
+
+        handleButtons.TransitionToCustomizeLocation(customLocation);
+    }
+
+    // old implementation
+    /*public void AddCustomLocation() {
         // create ui element for custom location
         GameObject customLocationToggle = Instantiate(locationTogglePrefab);
         Transform parent = transform.Find("Children");
         customLocationToggle.transform.SetParent(parent, false);
-        customLocationToggle.transform.SetSiblingIndex(parent.childCount - 2);
+        customLocationToggle.transform.SetSiblingIndex(parent.childCount - 3); // -3 when accounting for spacer & addfield button
         Toggle toggle = customLocationToggle.transform.Find("ToggleFrame/LocationToggle").GetComponent<Toggle>();
 
         // add new custom location to set class
-        CustomLocation customLocation = new CustomLocation("New Custom Location", "Placeholder Role", null);
+        CustomLocation customLocation = new CustomLocation();
         ((CustomLocationSet)ThisSet).AddLocation(customLocation);
         // initalize SettingsUI subclass
-        customLocation.SettingsUI = new Location.SettingsUIComponent(this, toggle) {
-            toggleValue = customLocation.enabled
-        };
-        customLocation.SettingsUI.RefreshToggle(true); // supresses tweening on location creation
-
+        customLocation.SettingsUI = new CustomLocation.CustomSettingsUIComponent(customLocation, this, customLocation.enabled, toggle);
+        //customLocation.SettingsUI.RefreshToggle(true); // supresses tweening on location creation
 
         // set ui element name and text
         customLocationToggle.name = $"CustomLocation_{ThisSet.Locations.IndexOf(customLocation)}";
-        customLocationToggle.transform.Find("LocationButton/Renderer").GetChild(0).GetComponent<TextMeshProUGUI>().text = customLocation.name;
+        customLocationToggle.transform.Find("LocationButton/Renderer").GetChild(0).GetComponent<TextMeshProUGUI>().text = customLocation.Name;
 
+
+        RefreshSetToggle();
         AutoScroll();
+        handleButtons.TransitionToCustomizeLocation(customLocation);
+    }*/
+
+    public override void OnSetToggle(Toggle toggle) {
+        if (NotDeletedLocations.Count == 0) {
+            toggle.isOn = false;
+        } else {
+            NotDeletedLocations.ForEach(location => location.SettingsUI.toggleValue = toggle.isOn);
+            if (Expanded) {
+                NotDeletedLocations.ForEach(location => location.SettingsUI.RefreshToggle());
+            }
+        }
     }
 
-    public void DeleteNewCustomLocations() {
-        // remove locations from the end of the list until it's length is the same as the start
-        while (ThisSet.Locations.Count > startingLocationsCount) {
-            ((CustomLocationSet)ThisSet).RemoveLocation((CustomLocation)ThisSet.Locations[ThisSet.Locations.Count - 1]);
+    public override void RefreshSetToggle(bool supressTween = false) {
+        bool turnOn = false;
+        NotDeletedLocations.ForEach(location => turnOn |= location.SettingsUI.toggleValue);
+        setToggle.isOn = turnOn;
+
+        if (supressTween) {
+            setToggle.GetComponent<ToggleSwitchController>().SupressTween(setToggle.isOn);
         }
+    }
+
+    public override void SaveLocationStates() {
+        ThisSet.Locations.RemoveAll(location => ((CustomLocation)location).Deleted);
+        ThisSet.Locations.ForEach(location => ((CustomLocation)location).JustAdded = false);
+
+        if (!ThisSet.locked) {
+            ThisSet.Locations.Where(location => GetCustomSettingsUI(location) != null).ToList().ForEach(location => {
+                location.Name = GetCustomSettingsUI(location).GetRealName();
+                location.Roles = GetCustomSettingsUI(location).GetRealRoles();
+                ((CustomLocation)location).SetImage(GetCustomSettingsUI(location).TempImage);
+            });
+        }
+
+        base.SaveLocationStates();
     }
 }

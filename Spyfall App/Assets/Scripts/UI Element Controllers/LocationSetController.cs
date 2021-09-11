@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Linq;
 using TMPro;
 
 public class LocationSetController : MonoBehaviour {
@@ -53,38 +54,29 @@ public class LocationSetController : MonoBehaviour {
 
     public virtual void InitializeUnlocked() {
         setToggle.enabled = true;
-
-        // initialize SettingsUI for each location
-        foreach (var location in ThisSet.Locations) {
-            location.SettingsUI = new Location.SettingsUIComponent(this) {
-                toggleValue = location.enabled
-            };
-        }
-
+        ThisSet.Locations.ForEach(location => location.SettingsUI ??= new Location.SettingsUIComponent(this, location.enabled));
         RefreshSetToggle(true);
-        RefreshLocationToggles();
     }
 
 
-    public virtual void ExpandedChanged(bool isExpanded) {
+    public virtual void ExpandedChanged(bool isExpanded, bool doAutoScroll = true) {
         if (isExpanded) {
-            int i = 0;
             foreach (var location in ThisSet.Locations) {
                 // create prefab and set placement in heiarchy
                 GameObject locationToggle = Instantiate(locationTogglePrefab);
                 locationToggle.transform.SetParent(transform.Find("Children"), false);
-                locationToggle.transform.Find("LocationButton/Renderer").GetChild(0).GetComponent<TextMeshProUGUI>().text = location.name;
-                locationToggle.name = $"Location_{i}";
+                locationToggle.transform.Find("LocationButton/Renderer").GetChild(0).GetComponent<TextMeshProUGUI>().text = location.Name;
+                locationToggle.name = $"Location_{ThisSet.Locations.IndexOf(location)}";
 
                 // create and assign toggle
                 Toggle toggle = locationToggle.transform.Find("ToggleFrame/LocationToggle").GetComponent<Toggle>();
                 location.SettingsUI.AssignToggle(toggle);
                 location.SettingsUI.RefreshToggle(true); // supresses tweening on location creation
-
-                i++;
             }
 
-            AutoScroll();
+            if (doAutoScroll) {
+                AutoScroll();
+            }
         } else {
             currentAutoscroll?.Stop();
             DestroyChildren();
@@ -136,18 +128,16 @@ public class LocationSetController : MonoBehaviour {
 
     // set all location toggles to match set toggle
     public virtual void OnSetToggle(Toggle toggle) {
-        foreach (var location in ThisSet.Locations) {
-            location.SettingsUI.toggleValue = toggle.isOn;
+        ThisSet.Locations.ForEach(location => location.SettingsUI.toggleValue = toggle.isOn);
+        if (Expanded) {
+            ThisSet.Locations.ForEach(location => location.SettingsUI.RefreshToggle());
         }
-        RefreshLocationToggles();
     }
 
     // turn set toggle off if all location toggles are off
     public virtual void RefreshSetToggle(bool supressTween = false) {
         bool turnOn = false;
-        foreach (var location in ThisSet.Locations) {
-            turnOn |= location.SettingsUI.toggleValue;
-        }
+        ThisSet.Locations.ForEach(location => turnOn |= location.SettingsUI.toggleValue);
         setToggle.isOn = turnOn;
 
         if (supressTween) {
@@ -155,19 +145,10 @@ public class LocationSetController : MonoBehaviour {
         }
     }
 
-    protected virtual void RefreshLocationToggles(bool supressTween = false) {
-        if (Expanded) {
-            foreach (var location in ThisSet.Locations) {
-                location.SettingsUI.RefreshToggle(supressTween);
-            }
-        }
-    }
-
     public virtual void SaveLocationStates() {
         if (!ThisSet.locked) {
-            foreach (var location in ThisSet.Locations) {
-                location.enabled = location.SettingsUI.toggleValue;
-            }
+            ThisSet.Locations.Where(location => location.SettingsUI != null).ToList().ForEach(location => location.enabled = location.SettingsUI.toggleValue);
+            ThisSet.Locations.ForEach(location => location.SettingsUI = null);
         }
     }
 }

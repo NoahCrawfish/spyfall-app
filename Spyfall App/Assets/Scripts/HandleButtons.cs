@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 using TMPro;
@@ -14,6 +15,7 @@ public class HandleButtons : MonoBehaviour
     [SerializeField] private GameObject leaderboardScreen;
     [SerializeField] private GameObject winnerScreen;
     [SerializeField] private GameObject settingsScreen;
+    [SerializeField] private GameObject customizeLocationScreen;
 
     private ManageGame manageGame;
     private UITransitions uiTransitions;
@@ -25,6 +27,8 @@ public class HandleButtons : MonoBehaviour
     private ManageLeaderboard manageLeaderboard;
     private ManageWinnerScreen manageWinner;
     private ManageSettingsScreen manageSettings;
+    private ManageCustomizeLocationScreen manageCustomizeLocation;
+    private DrawingUI ThisDrawingUI => FindObjectOfType<DrawingUI>();
 
     private void Awake() {
         manageGame = FindObjectOfType<ManageGame>();
@@ -37,6 +41,7 @@ public class HandleButtons : MonoBehaviour
         manageLeaderboard = FindObjectOfType<ManageLeaderboard>();
         manageWinner = FindObjectOfType<ManageWinnerScreen>();
         manageSettings = FindObjectOfType<ManageSettingsScreen>();
+        manageCustomizeLocation = FindObjectOfType<ManageCustomizeLocationScreen>();
     }
 
     private CanvasGroup GetCurrentPanel() {
@@ -214,7 +219,13 @@ public class HandleButtons : MonoBehaviour
     }
 
     public void CancelSettings() {
-        manageSettings.CustomSetController?.DeleteNewCustomLocations();
+        // revert changes to which custom locations were created/destroyed
+        manageGame.CustomSet.Locations.RemoveAll(location => ((CustomLocation)location).JustAdded);
+        manageGame.CustomSet.Locations.ForEach(location => ((CustomLocation)location).Deleted = false);
+        // reset ui toggle data for every location
+        manageGame.LocationSets.ForEach(locationSet => locationSet.Locations.ForEach(location => location.SettingsUI = null));
+        manageGame.CustomSet.Locations.ForEach(location => location.SettingsUI = null);
+
         if (manageSettings.PreviousScreen == null) {
             uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), mainMenu.GetComponent<CanvasGroup>());
         } else {
@@ -230,5 +241,59 @@ public class HandleButtons : MonoBehaviour
         } else {
             locationSet.Expanded = !locationSet.Expanded;
         }
+    }
+
+    public void EditCustomLocationButton(GameObject caller) {
+        GameObject customLocationToggle = caller.transform.parent.parent.gameObject;
+        int index = int.Parse(customLocationToggle.name.Split('_')[1]);
+        CustomLocation customLocation = (CustomLocation)manageGame.CustomSet.Locations[index];
+        TransitionToCustomizeLocation(customLocation);
+    }
+
+    public void TransitionToCustomizeLocation(CustomLocation customLocation) {
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), customizeLocationScreen.GetComponent<CanvasGroup>());
+        StartCoroutine(manageCustomizeLocation.Initialize(customLocation));
+    }
+
+    public void SaveCustomLocation() {
+        manageCustomizeLocation.SaveLocationSettings();
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), settingsScreen.GetComponent<CanvasGroup>());
+    }
+
+    public void CancelCustomLocation() {
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), settingsScreen.GetComponent<CanvasGroup>());
+    }
+
+    public void DeleteCustomLocation() {
+        manageCustomizeLocation.DeleteLocation();
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), settingsScreen.GetComponent<CanvasGroup>());
+    }
+
+    public void AddRoleField() {
+        manageCustomizeLocation.AddRole();
+    }
+
+    public void CreateImageButton() {
+        manageCustomizeLocation.ShowEditImageCanvas();
+    }
+
+    public void RoleTrash(GameObject caller) {
+        manageCustomizeLocation.Trash(caller);
+    }
+
+    public void WhiteColor() {
+        ThisDrawingUI.CurrentColor = DrawingUI.Colors.white;
+    }
+
+    public void BlueColor() {
+        ThisDrawingUI.CurrentColor = DrawingUI.Colors.blue;
+    }
+
+    public void OrangeColor() {
+        ThisDrawingUI.CurrentColor = DrawingUI.Colors.orange;
+    }
+
+    public void BlackColor() {
+        ThisDrawingUI.CurrentColor = DrawingUI.Colors.black;
     }
 }

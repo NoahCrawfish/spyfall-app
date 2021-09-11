@@ -98,7 +98,7 @@ public class ManageDrawCardsScreen : MonoBehaviour
         Texture2D locationTexture = manageGame.CurrentLocation.GetImage();
         Sprite locationSprite = Sprite.Create(locationTexture, new Rect(0, 0, locationTexture.width, locationTexture.height), new Vector2(0.5f, 0.5f));
         cardInfoImage.sprite = (currentRole == "Spy") ? spySprite : locationSprite;
-        cardInfoText.text = (currentRole == "Spy") ? "You are the spy." : $"{manageGame.CurrentLocation.name}\nRole: {currentRole}";
+        cardInfoText.text = (currentRole == "Spy") ? "You are the spy." : $"{manageGame.CurrentLocation.Name}\nRole: {currentRole}";
 
         // fade in card info
         StartCoroutine(CanvasGroupFade(true, cardInfo.GetComponent<CanvasGroup>(), cardInfoFadeSpeed, () => nextCardButton.gameObject.SetActive(true)));

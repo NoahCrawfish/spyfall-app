@@ -68,7 +68,7 @@ public class ManageGameplayScreen : MonoBehaviour
         foreach (var locationSet in manageGame.LocationSets.Concat(new List<CustomLocationSet>{ manageGame.CustomSet }).ToList()) {
             foreach (var location in locationSet.Locations) {
                 if (location.enabled) {
-                    text += $"- {location.name}\n";
+                    text += $"- {location.Name}\n";
                 }
             }
         }
