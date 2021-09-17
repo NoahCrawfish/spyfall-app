@@ -6,6 +6,7 @@ using UnityEngine.UI;
 public class DrawingUI : MonoBehaviour {
     public static readonly Vector2Int imagePixels = new Vector2Int(800, 800);
     [SerializeField] private int brushSize;
+    [SerializeField] private BrushTypes brushType;
 
     [SerializeField] private List<GameObject> selectionBorders = new List<GameObject>();
     [SerializeField] Camera cam;
@@ -32,12 +33,18 @@ public class DrawingUI : MonoBehaviour {
     }
 
     private Vector2Int previousTexturePos;
+    private bool[] modifiedPixels;
 
     public enum Colors {
         black,
         blue,
         orange,
         white
+    }
+
+    public enum BrushTypes {
+        square,
+        round
     }
 
     public static Dictionary<Colors, Color32> EnumToColor = new Dictionary<Colors, Color32>() {
@@ -54,6 +61,7 @@ public class DrawingUI : MonoBehaviour {
     private void OnEnable() {
         CurrentColor = Colors.black;
         previousTexturePos.Reset();
+        modifiedPixels = new bool[imagePixels.x * imagePixels.y];
     }
 
     private void SwitchColorSelection(Colors color) {
@@ -70,8 +78,8 @@ public class DrawingUI : MonoBehaviour {
         Drawing.Apply();
     }
 
-    private void Update() {
-        // replace with touch input
+    // touch controlled drawing
+    /*private void Update() {
         if (Input.touchCount > 0) {
             RectTransform drawingRect = drawingCanvas.GetComponent<RectTransform>();
             Vector3[] drawingRectCorners = new Vector3[4];
@@ -79,6 +87,35 @@ public class DrawingUI : MonoBehaviour {
             Vector2 drawingTopLeft = cam.WorldToScreenPoint(drawingRectCorners[1]);
 
             Vector2 clickPos = (Input.GetTouch(0).position - drawingTopLeft) * new Vector2(1, -1);
+            Vector2 normalizedClickPos = new Vector2(clickPos.x / drawingRect.sizeDelta.x, clickPos.y / drawingRect.sizeDelta.y);
+            Vector2Int texturePos = new Vector2(normalizedClickPos.x * imagePixels.x, normalizedClickPos.y * imagePixels.y).RoundToInt();
+
+            if (previousTexturePos.IsReset()) {
+                previousTexturePos = texturePos;
+            }
+            if (texturePos.WithinDrawing() && CanDraw) {
+                ColorBetween(previousTexturePos, texturePos);
+            }
+
+            previousTexturePos = texturePos;
+        } else {
+            previousTexturePos.Reset();
+        }
+    }*/
+
+    // computer drawing
+    private void Update() {
+        if (Input.GetMouseButtonUp(0)) {
+            modifiedPixels = new bool[imagePixels.x * imagePixels.y];
+        }
+
+        if (Input.GetMouseButton(0)) {
+            RectTransform drawingRect = drawingCanvas.GetComponent<RectTransform>();
+            Vector3[] drawingRectCorners = new Vector3[4];
+            drawingRect.GetWorldCorners(drawingRectCorners);
+            Vector2 drawingTopLeft = cam.WorldToScreenPoint(drawingRectCorners[1]);
+
+            Vector2 clickPos = ((Vector2)Input.mousePosition - drawingTopLeft) * new Vector2(1, -1);
             Vector2 normalizedClickPos = new Vector2(clickPos.x / drawingRect.sizeDelta.x, clickPos.y / drawingRect.sizeDelta.y);
             Vector2Int texturePos = new Vector2(normalizedClickPos.x * imagePixels.x, normalizedClickPos.y * imagePixels.y).RoundToInt();
 
@@ -112,7 +149,6 @@ public class DrawingUI : MonoBehaviour {
         } else {
             ColorArea(endPoint, ref currentImage);
         }
-        
 
         Drawing.SetPixels32(currentImage);
         Drawing.Apply();
@@ -125,8 +161,21 @@ public class DrawingUI : MonoBehaviour {
 
                 if (point.WithinDrawing()) {
                     int flatPoint = point.FlattenPoint();
-                    currentImage[flatPoint] = EnumToColor[CurrentColor];
+                    try {
+                        if (!modifiedPixels[flatPoint]) {
+                            bool squareQualifier = brushType == BrushTypes.square;
+                            bool roundQualifier = brushType == BrushTypes.round && Vector2.Distance(point, origin) <= brushSize;
+
+                            if (squareQualifier || roundQualifier) {
+                                currentImage[flatPoint] = EnumToColor[CurrentColor];
+                                modifiedPixels[flatPoint] = true;
+                            }
+                        }
+                    } catch (System.IndexOutOfRangeException) {
+                        Debug.Log(flatPoint);
+                    }
                 }
+                
             }
         }
     }
@@ -153,6 +202,6 @@ public static class DrawingExtensions {
 
     public static int FlattenPoint(this Vector2Int point) {
         // texture coordinates start at the lower left of the texture
-        return DrawingUI.imagePixels.x * (DrawingUI.imagePixels.y - point.y) + point.x;
+        return DrawingUI.imagePixels.x * (DrawingUI.imagePixels.y - point.y - 1) + point.x;
     }
 }

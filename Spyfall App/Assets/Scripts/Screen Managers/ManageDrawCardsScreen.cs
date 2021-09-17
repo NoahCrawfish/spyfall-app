@@ -19,6 +19,8 @@ public class ManageDrawCardsScreen : MonoBehaviour
     [SerializeField] GameObject card;
     [SerializeField] GameObject blurPanel;
     [SerializeField] TextMeshProUGUI playerPrompt;
+    [SerializeField] TextMeshProUGUI playerPromptShadow1;
+    [SerializeField] TextMeshProUGUI playerPromptShadow2;
     [SerializeField] GameObject promptTip;
     public GameObject nextCardButton;
     [SerializeField] GameObject cardInfo;
@@ -139,7 +141,7 @@ public class ManageDrawCardsScreen : MonoBehaviour
 
 
     private void UpdatePrompts() {
-        playerPrompt.text = $"{manageGame.Players[CardCount].Name}:\nSwipe up";
+        playerPrompt.text = playerPromptShadow1.text = playerPromptShadow2.text = $"{manageGame.Players[CardCount].Name}:\nSwipe up";
         // ensures that the tip is visible at the start of each new card
         promptTip.GetComponent<FlashText>().ResetT();
     }

@@ -51,7 +51,7 @@ public class DrawingElementsController : MonoBehaviour
 
     public void SaveDrawing() {
         Texture2D drawing = GetComponent<DrawingUI>().Drawing;
-        Manager.SettingsUI.SetTempImage(drawing);
+        Manager.SettingsUI.SetTempImage(drawing); // DONT SET TEMP IMAGE UNTIL CUSTOMIZELOCATIONSCREEN DONE BUTTON IS PRESSED
         Manager.RefreshPreviewImage();
         FadeOut();
     }

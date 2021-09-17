@@ -91,32 +91,6 @@ public class CustomLocationSetController : LocationSetController {
         handleButtons.TransitionToCustomizeLocation(customLocation);
     }
 
-    // old implementation
-    /*public void AddCustomLocation() {
-        // create ui element for custom location
-        GameObject customLocationToggle = Instantiate(locationTogglePrefab);
-        Transform parent = transform.Find("Children");
-        customLocationToggle.transform.SetParent(parent, false);
-        customLocationToggle.transform.SetSiblingIndex(parent.childCount - 3); // -3 when accounting for spacer & addfield button
-        Toggle toggle = customLocationToggle.transform.Find("ToggleFrame/LocationToggle").GetComponent<Toggle>();
-
-        // add new custom location to set class
-        CustomLocation customLocation = new CustomLocation();
-        ((CustomLocationSet)ThisSet).AddLocation(customLocation);
-        // initalize SettingsUI subclass
-        customLocation.SettingsUI = new CustomLocation.CustomSettingsUIComponent(customLocation, this, customLocation.enabled, toggle);
-        //customLocation.SettingsUI.RefreshToggle(true); // supresses tweening on location creation
-
-        // set ui element name and text
-        customLocationToggle.name = $"CustomLocation_{ThisSet.Locations.IndexOf(customLocation)}";
-        customLocationToggle.transform.Find("LocationButton/Renderer").GetChild(0).GetComponent<TextMeshProUGUI>().text = customLocation.Name;
-
-
-        RefreshSetToggle();
-        AutoScroll();
-        handleButtons.TransitionToCustomizeLocation(customLocation);
-    }*/
-
     public override void OnSetToggle(Toggle toggle) {
         if (NotDeletedLocations.Count == 0) {
             toggle.isOn = false;

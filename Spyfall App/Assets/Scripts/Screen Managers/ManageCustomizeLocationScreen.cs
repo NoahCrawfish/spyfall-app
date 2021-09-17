@@ -21,6 +21,7 @@ public class ManageCustomizeLocationScreen : MonoBehaviour
     private const int objectsAfterPlayersInPlayerFields = 3;
 
     private Texture2D defaultImage;
+    public Texture2D PreviousImage { get; set; }
 
     private void Awake() {
         defaultImage = Resources.Load("custom_location_default") as Texture2D;
@@ -29,6 +30,7 @@ public class ManageCustomizeLocationScreen : MonoBehaviour
     public IEnumerator Initialize(CustomLocation thisLocation) {
         ThisLocation = thisLocation;
         scrollList.GetComponent<ScrollRect>().verticalNormalizedPosition = 1;
+        PreviousImage = SettingsUI.GetTempImage();
         yield return new WaitForEndOfFrame();
 
         ResetRoleFields();
@@ -43,6 +45,8 @@ public class ManageCustomizeLocationScreen : MonoBehaviour
             Texture2D tex = new Texture2D(2, 2);
             tex.LoadImage(SettingsUI.TempImage);
             imagePreview.sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(tex.width / 2, tex.height / 2));
+        } else {
+            imagePreview.sprite = Sprite.Create(defaultImage, new Rect(0, 0, defaultImage.width, defaultImage.height), new Vector2(defaultImage.width / 2, defaultImage.height / 2));
         }
     }
 
@@ -135,7 +139,6 @@ public class ManageCustomizeLocationScreen : MonoBehaviour
 
                 string newRole = string.IsNullOrWhiteSpace(text) ? placeholderText : text;
                 rolesToAdd.Add(newRole);
-
             }
         }
         SettingsUI.TempRoles = rolesToAdd;

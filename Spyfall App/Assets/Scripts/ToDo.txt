@@ -1,7 +1,3 @@
-Edit custom location -> Do nothing -> Done -> Cancel -> Go back to editing custom location
-- clears roles for some reason
-Image preview doesn't update on new location
-
 Promotional popup for paid version
 MAKE VERY APPEALING
 - Video showing off new locations packs

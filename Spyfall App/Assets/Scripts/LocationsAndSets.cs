@@ -127,17 +127,30 @@ public class CustomLocation : Location {
         public List<string> TempRoles { get => tempRoles ?? new List<string> { "Role 1", "Role 2", "Role 3" }; set => tempRoles = value; }
 
         public CustomSettingsUIComponent(CustomLocation location, LocationSetController parent, bool toggleValue, Toggle toggle = null) : base(parent, toggleValue, toggle) {
-            TempImage = location.Image;
+            SetTempImage(location.Image);
+
             // assign by backing field to preserve null values
-            TempName = location.name;
-            TempRoles = location.roles;
+            if (location.name != null) {
+                TempName = string.Copy(location.name);
+            }
+            
+            if (location.roles != null) {
+                TempRoles = location.roles.Select(role => string.Copy(role)).ToList();
+            }
         }
 
         public void SetTempImage(Texture2D image) {
             TempImage = ImageConversion.EncodeToPNG(image);
         }
         public void SetTempImage(byte[] image) {
-            TempImage = image;
+            if (image != null) {
+                if (TempImage == null) {
+                    TempImage = new byte[image.Length];
+                }
+                Array.Copy(image, TempImage, image.Length);
+            } else {
+                TempImage = null;
+            }
         }
 
         public Texture2D GetTempImage() {

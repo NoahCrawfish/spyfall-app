@@ -261,6 +261,7 @@ public class HandleButtons : MonoBehaviour
     }
 
     public void CancelCustomLocation() {
+        manageCustomizeLocation.SettingsUI.SetTempImage(manageCustomizeLocation.PreviousImage);
         uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), settingsScreen.GetComponent<CanvasGroup>());
     }
 
