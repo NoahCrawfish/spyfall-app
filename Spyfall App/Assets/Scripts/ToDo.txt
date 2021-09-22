@@ -1,17 +1,23 @@
-Promotional popup for paid version
+Rework ad placement
+Sound
+
+Design promotional popup for paid version
 MAKE VERY APPEALING
 - Video showing off new locations packs
 - Video showing off custom locations
-
-In App Purchase
-Loading Purchase Data
+NO SCROLLING - TOO MUCH OF A BARRIER TO PURCHASE
+Create text popup if purchasing is unavailable - handled in IAPManager
+Tweak popup tweening
 
 Build to iphone and test IOS specifics
 - is playerPrefs and xml data saved and loaded correctly
 - do in app purchases work
 - does the timer notification and screen non-dimming work
-- are they remembered after uninstall and reinstall (might not work in dev build)
+- are purchases remembered after uninstall and reinstall - they should, unless I have to read Apple Store reciept specifically
 
-Tweening and visual polish + final art
+Final touches:
+Disable test mode for ads in Unity Dashboard
+Make sure all controls are configured for iOS
+Finalize Monetization page of Unity Dashboard - ex. Add store ID
 
-Sound
+Create app store graphics

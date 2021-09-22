@@ -15,6 +15,7 @@ public class ManageGame : MonoBehaviour {
     [SerializeField] private GameObject playerFields;
     [SerializeField] private TextMeshProUGUI roundText;
     [SerializeField] private GameObject multiplierText;
+    public PurchasePopupController purchasePopup;
 
     private const float roundScreenTime = 1f;
     public List<Player> Players { get; private set; } = new List<Player>();
@@ -23,6 +24,7 @@ public class ManageGame : MonoBehaviour {
     public bool Paused { get; private set; }
     public DateTime PauseTime { get; private set; }
     public DateTime UnpauseTime { get; private set; }
+    public IAPManager IapManager { get; private set; }
     
     // current round
     public int CurrentRound { get; private set; } = 0;
@@ -36,7 +38,17 @@ public class ManageGame : MonoBehaviour {
     public int[] MaxPoints { get; private set; } = new int[2];
     public bool ScoringDisabled { get; private set; }
     public int LastRoundMultiplier { get; private set; }
-    public bool PaidUnlocked { get; private set; } // need to load this data directly from the app store on launch, to retain purchases in case of uninstalling
+
+    private bool paidUnlocked;
+    public bool PaidUnlocked {
+        get => paidUnlocked;
+        set {
+            paidUnlocked = value;
+            if (value) {
+                UnlockFullVersion();
+            }
+        }
+    }
 
     private string PlatformPathModifier {
         get {
@@ -44,6 +56,8 @@ public class ManageGame : MonoBehaviour {
                 return "Editor-";
             #elif UNITY_IOS
                 return "iOS-";
+            #elif UNITY_ANDROID
+                return "Android-";
             #endif
         }
     }
@@ -82,6 +96,8 @@ public class ManageGame : MonoBehaviour {
             Directory.CreateDirectory(savePath);
         }
 
+        IapManager = new IAPManager(this);
+
         DeleteDepreciatedSets();
         LoadSets();
         InitializeLocationsUsing();
@@ -111,13 +127,6 @@ public class ManageGame : MonoBehaviour {
         Paused = pause;
     }
 
-    // dev debug
-    private void Update() {
-        if (Input.GetKeyDown(KeyCode.P) && !PaidUnlocked) {
-            UnlockFullVersion();
-        }
-    }
-
 
     private string StringToPath(string input) {
         return input.ToLower().Replace(' ', '_');
@@ -142,6 +151,11 @@ public class ManageGame : MonoBehaviour {
         filePath = $"{savePath}/{StringToPath(LocationsAndRoles.customSetName)}";
         CustomSet = File.Exists(filePath) ?
             Serialization.LoadViaDataContractSerialization<CustomLocationSet>(filePath) : new CustomLocationSet(!PaidUnlocked);
+
+        if (!CustomSet.locked) {
+            // set by private backing value to not retrigger UnlockFullVersion method
+            paidUnlocked = true;
+        }
 
         SaveSets();
     }
@@ -286,8 +300,13 @@ public class ManageGame : MonoBehaviour {
         }
     }
 
+    // called if PaidUnlocked is set to true
     public void UnlockFullVersion() {
-        PaidUnlocked = true;
+        // exit if the paid version has already been unlocked
+        if (!CustomSet.locked) {
+            return;
+        }
+
         foreach (var locationSet in LocationSets) {
             locationSet.locked = false;
         }

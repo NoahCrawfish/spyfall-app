@@ -11,16 +11,20 @@ using Unity.Notifications.iOS;
 
 public class ManageGameplayScreen : MonoBehaviour
 {
-    [SerializeField] GameObject gameplayScreen;
-    [SerializeField] GameObject content;
-    [SerializeField] TextMeshProUGUI locationsList;
-    [SerializeField] TextMeshProUGUI timerText;
+    [SerializeField] private GameObject gameplayScreen;
+    [SerializeField] private GameObject content;
+    [SerializeField] private TextMeshProUGUI locationsList;
+    [SerializeField] private TextMeshProUGUI timerText;
+    [SerializeField] private InterstitialAd videoAd;
+    [SerializeField] private GameObject quitButton;
+    [SerializeField] private GameObject doneButton;
 
     private int time;
     private ManageGame manageGame;
 #if UNITY_IOS
     iOSNotification notification;
 #endif
+    private Task adBuffer;
 
     private void Awake() {
         manageGame = FindObjectOfType<ManageGame>();
@@ -49,6 +53,11 @@ public class ManageGameplayScreen : MonoBehaviour
     public void InitializeScreen() {
         SetPossibleLocations();
         timerText.GetComponent<FlashText>().flashSpeed = 0f;
+        // schedule ad if the the full version hasn't been unlocked
+        if (!manageGame.PaidUnlocked) {
+            HideButtons();
+            adBuffer = new Task(ShowAdDelayed());
+        }
 
         if (manageGame.TimerMode != ManageGame.TimerModes.disabled) {
             timerText.transform.parent.gameObject.SetActive(true);
@@ -61,6 +70,25 @@ public class ManageGameplayScreen : MonoBehaviour
         } else {
             TimerDisabled();
         }
+    }
+
+    private IEnumerator ShowAdDelayed() {
+        yield return new WaitForSeconds(5);
+        videoAd.StartLoadAd();
+    }
+
+    public void CancelAdBuffer() {
+        adBuffer?.Stop();
+    }
+
+    private void HideButtons() {
+        quitButton.SetActive(false);
+        doneButton.SetActive(false);
+    }
+
+    public void ShowButtons() {
+        quitButton.SetActive(true);
+        doneButton.SetActive(true);
     }
 
     private void SetPossibleLocations() {

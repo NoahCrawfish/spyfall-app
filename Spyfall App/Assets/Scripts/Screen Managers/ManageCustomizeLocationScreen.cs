@@ -142,27 +142,6 @@ public class ManageCustomizeLocationScreen : MonoBehaviour
             }
         }
         SettingsUI.TempRoles = rolesToAdd;
-
-        Texture2D imagePreviewTex = imagePreview.sprite.TextureFromSprite();
-        if (!CompareTextures(imagePreviewTex, defaultImage)) {
-            SettingsUI.SetTempImage(imagePreviewTex);
-        }
-    }
-
-    private bool CompareTextures(Texture2D first, Texture2D second) {
-        Color[] firstPix = first.GetPixels();
-        Color[] secondPix = second.GetPixels();
-
-        if (firstPix.Length != secondPix.Length) {
-            return false;
-        }
-        for (int i = 0; i < firstPix.Length; i++) {
-            if (firstPix[i] != secondPix[i]) {
-                return false;
-            }
-        }
-
-        return true;
     }
 
     public void DeleteLocation() {

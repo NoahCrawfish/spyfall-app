@@ -78,32 +78,7 @@ public class DrawingUI : MonoBehaviour {
         Drawing.Apply();
     }
 
-    // touch controlled drawing
-    /*private void Update() {
-        if (Input.touchCount > 0) {
-            RectTransform drawingRect = drawingCanvas.GetComponent<RectTransform>();
-            Vector3[] drawingRectCorners = new Vector3[4];
-            drawingRect.GetWorldCorners(drawingRectCorners);
-            Vector2 drawingTopLeft = cam.WorldToScreenPoint(drawingRectCorners[1]);
-
-            Vector2 clickPos = (Input.GetTouch(0).position - drawingTopLeft) * new Vector2(1, -1);
-            Vector2 normalizedClickPos = new Vector2(clickPos.x / drawingRect.sizeDelta.x, clickPos.y / drawingRect.sizeDelta.y);
-            Vector2Int texturePos = new Vector2(normalizedClickPos.x * imagePixels.x, normalizedClickPos.y * imagePixels.y).RoundToInt();
-
-            if (previousTexturePos.IsReset()) {
-                previousTexturePos = texturePos;
-            }
-            if (texturePos.WithinDrawing() && CanDraw) {
-                ColorBetween(previousTexturePos, texturePos);
-            }
-
-            previousTexturePos = texturePos;
-        } else {
-            previousTexturePos.Reset();
-        }
-    }*/
-
-    // computer drawing
+#if UNITY_EDITOR
     private void Update() {
         if (Input.GetMouseButtonUp(0)) {
             modifiedPixels = new bool[imagePixels.x * imagePixels.y];
@@ -131,6 +106,31 @@ public class DrawingUI : MonoBehaviour {
             previousTexturePos.Reset();
         }
     }
+#else
+    private void Update() {
+        if (Input.touchCount > 0) {
+            RectTransform drawingRect = drawingCanvas.GetComponent<RectTransform>();
+            Vector3[] drawingRectCorners = new Vector3[4];
+            drawingRect.GetWorldCorners(drawingRectCorners);
+            Vector2 drawingTopLeft = cam.WorldToScreenPoint(drawingRectCorners[1]);
+
+            Vector2 clickPos = (Input.GetTouch(0).position - drawingTopLeft) * new Vector2(1, -1);
+            Vector2 normalizedClickPos = new Vector2(clickPos.x / drawingRect.sizeDelta.x, clickPos.y / drawingRect.sizeDelta.y);
+            Vector2Int texturePos = new Vector2(normalizedClickPos.x * imagePixels.x, normalizedClickPos.y * imagePixels.y).RoundToInt();
+
+            if (previousTexturePos.IsReset()) {
+                previousTexturePos = texturePos;
+            }
+            if (texturePos.WithinDrawing() && CanDraw) {
+                ColorBetween(previousTexturePos, texturePos);
+            }
+
+            previousTexturePos = texturePos;
+        } else {
+            previousTexturePos.Reset();
+        }
+    }
+#endif
 
     private void ColorBetween(Vector2Int startPoint, Vector2Int endPoint) {
         Color32[] currentImage = Drawing.GetPixels32();

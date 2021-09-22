@@ -6,9 +6,11 @@ using UnityEngine.EventSystems;
 public class GetToggleClicked : MonoBehaviour, IPointerClickHandler
 {
     private Toggle toggle;
+    private HandleButtons handleButtons;
 
     private void Awake() {
         toggle = GetComponent<Toggle>();
+        handleButtons = FindObjectOfType<HandleButtons>();
     }
 
     public void OnPointerClick(PointerEventData eventData) {
@@ -24,8 +26,8 @@ public class GetToggleClicked : MonoBehaviour, IPointerClickHandler
                 GameObject set = transform.parent.parent.parent.gameObject;
                 LocationSetController setController = set.GetComponent<LocationSetController>();
                 if (setController.ThisSet.locked) {
-                    Debug.Log("Paid popup");
                     // paid pop-up, also in handlebuttons on set button click
+                    handleButtons.purchasePopup.SetActive(true);
                 } else {
                     setController.OnSetToggle(toggle);
                 }

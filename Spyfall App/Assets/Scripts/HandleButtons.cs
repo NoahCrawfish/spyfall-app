@@ -16,6 +16,7 @@ public class HandleButtons : MonoBehaviour
     [SerializeField] private GameObject winnerScreen;
     [SerializeField] private GameObject settingsScreen;
     [SerializeField] private GameObject customizeLocationScreen;
+    public GameObject purchasePopup;
 
     private ManageGame manageGame;
     private UITransitions uiTransitions;
@@ -91,7 +92,8 @@ public class HandleButtons : MonoBehaviour
         if (manageDrawCards.CardCount < manageGame.Players.Count - 1) {
             manageDrawCards.NextCard();
         } else {
-            manageDrawCards.nextCardButton.gameObject.SetActive(false);
+            manageDrawCards.nextCardButton.SetActive(false);
+            manageDrawCards.blurPanel.SetActive(false);
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), gameplayScreen.GetComponent<CanvasGroup>());
             manageGameplay.InitializeScreen();
@@ -99,7 +101,9 @@ public class HandleButtons : MonoBehaviour
     }
 
     public void DoneWithRound() {
+        manageGameplay.CancelAdBuffer();
         Screen.sleepTimeout = SleepTimeout.SystemSetting;
+
         if (!manageGame.ScoringDisabled) {
             uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), scoringScreen1.GetComponent<CanvasGroup>());
             manageScoring.SetPreviousScores();
@@ -236,8 +240,8 @@ public class HandleButtons : MonoBehaviour
     public void SetButton(GameObject caller) {
         LocationSetController locationSet = caller.transform.parent.parent.GetComponent<LocationSetController>();
         if (locationSet.ThisSet.locked) {
-            Debug.Log("Paid popup");
             // show paid pop-up, also in GetToggleClicked script
+            purchasePopup.SetActive(true);
         } else {
             locationSet.Expanded = !locationSet.Expanded;
         }

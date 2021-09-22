@@ -2,35 +2,30 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.UI.ProceduralImage;
 using TMPro;
 
 public class ManageDrawCardsScreen : MonoBehaviour
 {
     private const float swipeDistance = 300f;
     private const int framesInAnimation = 12;
-    private readonly float[] blurEndpoints = { 0f, 3f };
-    private readonly Color[] blurTintEndpoints = { new Color(1, 1, 1), new Color(118f / 255f, 118f / 255f, 118f / 255f)};
-    private const float blurSpeed = 0.05f;
-    private const float cardInfoFadeSpeed = 0.0275f;
-    private const float cardFadeOutSpeed = 0.1f;
 
     [SerializeField] GameObject drawCardsScreen;
     [SerializeField] List<Sprite> framesBeforeAnimation;
     [SerializeField] GameObject card;
-    [SerializeField] GameObject blurPanel;
+    public GameObject blurPanel;
     [SerializeField] TextMeshProUGUI playerPrompt;
     [SerializeField] TextMeshProUGUI playerPromptShadow1;
     [SerializeField] TextMeshProUGUI playerPromptShadow2;
     [SerializeField] GameObject promptTip;
     public GameObject nextCardButton;
     [SerializeField] GameObject cardInfo;
-    [SerializeField] Image cardInfoImage;
+    [SerializeField] ProceduralImage cardInfoImage;
     [SerializeField] TextMeshProUGUI cardInfoText;
     [SerializeField] Sprite spySprite;
 
     private Vector2 touchStart;
     public int CardCount { get; private set; }
-    private delegate void AfterEnumerator();
 
     private Animator animator;
     private Image image;
@@ -78,11 +73,11 @@ public class ManageDrawCardsScreen : MonoBehaviour
                         break;
                 }
             }
-
-            // computer debugging
-            if (!animator.enabled && Input.GetKeyDown(KeyCode.D)) {
-                BeginCardAnimation();
-            }
+            #if UNITY_EDITOR
+                if (!animator.enabled && Input.GetKeyDown(KeyCode.D)) {
+                    BeginCardAnimation();
+                }
+            #endif
         }
     }
 
@@ -91,8 +86,7 @@ public class ManageDrawCardsScreen : MonoBehaviour
         animator.enabled = true;
         animator.Play("CardFlip", -1, (float)framesBeforeAnimation.Count / framesInAnimation);
         blurPanel.SetActive(true);
-        // blur background and show card info afterwards
-        StartCoroutine(BlurFade(true, blurSpeed, ShowCardInfo));
+        blurPanel.GetComponent<BlurController>().DoBlur(BlurController.Fade.fadeIn, ShowCardInfo);
     }
 
     private void ShowCardInfo() {
@@ -103,7 +97,7 @@ public class ManageDrawCardsScreen : MonoBehaviour
         cardInfoText.text = (currentRole == "Spy") ? "You are the spy." : $"{manageGame.CurrentLocation.Name}\nRole: {currentRole}";
 
         // fade in card info
-        StartCoroutine(CanvasGroupFade(true, cardInfo.GetComponent<CanvasGroup>(), cardInfoFadeSpeed, () => nextCardButton.gameObject.SetActive(true)));
+        cardInfo.GetComponent<CanvasGroupFade>().DoFade(CanvasGroupFade.Fade.fadeIn, () => nextCardButton.gameObject.SetActive(true));
     }
 
     public void NextCard() {
@@ -111,34 +105,13 @@ public class ManageDrawCardsScreen : MonoBehaviour
         CardCount += 1;
         UpdatePrompts();
 
+        // reanimate playerPrompt bounce
+        playerPrompt.transform.parent.GetComponent<ScaleBounceTransition>().Reanimate();
+
         // fade out card and info
-        StartCoroutine(BlurFade(false, cardFadeOutSpeed, ResetCardAnimation));
-        StartCoroutine(CanvasGroupFade(false, card.GetComponent<CanvasGroup>(), cardFadeOutSpeed));
+        blurPanel.GetComponent<BlurController>().DoBlur(BlurController.Fade.fadeOut, ResetCardAnimation);
+        card.GetComponent<CanvasGroupFade>().DoFade(CanvasGroupFade.Fade.fadeOut);
     }
-
-
-    private IEnumerator CanvasGroupFade(bool fadeIn, CanvasGroup canvasGroup, float speed, AfterEnumerator callAfter = null) {
-        float alpha = fadeIn ? 0 : 1;
-        while (fadeIn ? alpha < 1 : alpha > 0) {
-            alpha = Mathf.Clamp(fadeIn ? alpha + speed : alpha - speed, 0, 1);
-            canvasGroup.alpha = alpha;
-            yield return 0;
-        }
-        callAfter?.Invoke();
-    }
-
-    private IEnumerator BlurFade(bool fadeIn, float speed, AfterEnumerator callAfter = null) {
-        float alpha = fadeIn ? 0 : 1;
-        Material blur = blurPanel.GetComponent<Image>().material;
-        while (fadeIn ? alpha < 1 : alpha > 0) {
-            alpha = Mathf.Clamp(fadeIn ? alpha + speed : alpha - speed, 0, 1);
-            blur.SetFloat("_Size", Mathf.Lerp(blurEndpoints[0], blurEndpoints[1], alpha));
-            blur.SetColor("_MultiplyColor", LerpColor(blurTintEndpoints[0], blurTintEndpoints[1], alpha));
-            yield return 0;
-        }
-        callAfter?.Invoke();
-    }
-
 
     private void UpdatePrompts() {
         playerPrompt.text = playerPromptShadow1.text = playerPromptShadow2.text = $"{manageGame.Players[CardCount].Name}:\nSwipe up";
@@ -152,12 +125,5 @@ public class ManageDrawCardsScreen : MonoBehaviour
         image.sprite = framesBeforeAnimation[0];
         card.GetComponent<CanvasGroup>().alpha = 1;
         cardInfo.GetComponent<CanvasGroup>().alpha = 0f;
-    }
-
-    private Color LerpColor(Color start, Color finish, float t) {
-        Vector4 startRGBA = new Vector4(start.r, start.g, start.b, start.a);
-        Vector4 finishRGBA = new Vector4(finish.r, finish.g, finish.b, finish.a);
-        Vector4 newColor = Vector4.Lerp(startRGBA, finishRGBA, t);
-        return new Color(newColor[0], newColor[1], newColor[2], newColor[3]);
     }
 }
