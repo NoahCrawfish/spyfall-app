@@ -11,6 +11,7 @@ public class BlurController : MonoBehaviour
     [SerializeField] private Color32 tintFinish = new Color32(118, 118, 118, 255);
     [SerializeField, Range(0f, 1f)] private float blurFadeSpeed = 0.1f;
 
+    public float Alpha { get; private set; }
     public delegate void AfterEnumerator();
 
     public enum Fade {
@@ -23,12 +24,12 @@ public class BlurController : MonoBehaviour
     }
 
     private IEnumerator BlurFade(bool fadeIn, AfterEnumerator callAfter = null) {
-        float alpha = fadeIn ? 0 : 1;
+        Alpha = fadeIn ? 0 : 1;
         Material blur = GetComponent<Image>().material;
-        while (fadeIn ? alpha < 1 : alpha > 0) {
-            alpha = Mathf.Clamp(fadeIn ? alpha + blurFadeSpeed : alpha - blurFadeSpeed, 0, 1);
-            blur.SetFloat("_Size", Mathf.Lerp(blurStartAmount, blurFinishAmount, alpha));
-            blur.SetColor("_MultiplyColor", LerpColor(tintStart, tintFinish, alpha));
+        while (fadeIn ? Alpha < 1 : Alpha > 0) {
+            Alpha = Mathf.Clamp(fadeIn ? Alpha + blurFadeSpeed : Alpha - blurFadeSpeed, 0, 1);
+            blur.SetFloat("_Size", Mathf.Lerp(blurStartAmount, blurFinishAmount, Alpha));
+            blur.SetColor("_MultiplyColor", LerpColor(tintStart, tintFinish, Alpha));
             yield return 0;
         }
 

@@ -19,6 +19,8 @@ public class DrawingElementsController : MonoBehaviour
             GetComponent<DrawingUI>().CreateBlankImage();
         }
 
+        ManageAudio.Instance.Play("drawing", true);
+        ManageAudio.Instance.Mute("drawing", false);
         ShowDrawingElements();
     }
 
@@ -46,6 +48,7 @@ public class DrawingElementsController : MonoBehaviour
     }
 
     public void FadeOut() {
+        ManageAudio.Instance.Stop("drawing");
         GetComponent<CanvasGroupFade>().DoFade(CanvasGroupFade.Fade.fadeOut, () => SetElementsActive(false));
         blurPanel.GetComponent<BlurController>().DoBlur(BlurController.Fade.fadeOut);
     }

@@ -18,6 +18,7 @@ public class ManageGameplayScreen : MonoBehaviour
     [SerializeField] private InterstitialAd videoAd;
     [SerializeField] private GameObject quitButton;
     [SerializeField] private GameObject doneButton;
+    [SerializeField] private ScrollRect scrollRect;
 
     private int time;
     private ManageGame manageGame;
@@ -53,6 +54,7 @@ public class ManageGameplayScreen : MonoBehaviour
     public void InitializeScreen() {
         SetPossibleLocations();
         timerText.GetComponent<FlashText>().flashSpeed = 0f;
+        scrollRect.verticalNormalizedPosition = 1;
         // schedule ad if the the full version hasn't been unlocked
         if (!manageGame.PaidUnlocked) {
             HideButtons();
@@ -137,6 +139,8 @@ public class ManageGameplayScreen : MonoBehaviour
         timerText.text = "Time Up!";
         timerText.GetComponent<FlashText>().ResetT();
         timerText.GetComponent<FlashText>().flashSpeed = 2f;
+
+        ManageAudio.Instance.Play("alarm");
 #if UNITY_IOS
         iOSNotificationCenter.ScheduleNotification(notification);
 #endif

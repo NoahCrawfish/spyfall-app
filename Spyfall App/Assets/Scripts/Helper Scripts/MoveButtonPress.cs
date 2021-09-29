@@ -13,14 +13,18 @@ public class MoveButtonPress : MonoBehaviour, ISelectHandler, IDeselectHandler, 
     [SerializeField] private Color defaultColor;
     [SerializeField] private Color pressedColor;
     [SerializeField] private bool holdDownWhenSelected;
+    [SerializeField] private string alternateSound;
 
     private Selectable selectable;
+    private ManageAudio manageAudio;
 
     private void Awake() {
         rectTransform = transform.Find("Renderer").GetComponent<RectTransform>();
         shadowRect = transform.Find("Shadow").GetComponent<RectTransform>();
         rendererImage = transform.Find("Renderer").GetComponent<ProceduralImage>();
         selectable = GetComponent<Selectable>();
+
+        manageAudio = FindObjectOfType<ManageAudio>();
     }
 
     private void Start() {
@@ -37,12 +41,14 @@ public class MoveButtonPress : MonoBehaviour, ISelectHandler, IDeselectHandler, 
     public void OnPointerUp(PointerEventData eventData) {
         if (!holdDownWhenSelected && selectable.interactable) {
             Up();
+            manageAudio.PlayVariedPitch(alternateSound == "" ? "click" : alternateSound, 0.15f);
         }
     }
 
     public void OnSelect(BaseEventData eventData) {
         if (holdDownWhenSelected && selectable.interactable) {
             Down();
+            manageAudio.PlayVariedPitch(alternateSound == "" ? "click" : alternateSound, 0.15f);
         }
     }
 

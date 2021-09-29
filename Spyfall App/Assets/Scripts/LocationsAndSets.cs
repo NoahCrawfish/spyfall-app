@@ -140,7 +140,11 @@ public class CustomLocation : Location {
         }
 
         public void SetTempImage(Texture2D image) {
-            TempImage = ImageConversion.EncodeToPNG(image);
+            if (image != null) {
+                TempImage = ImageConversion.EncodeToPNG(image);
+            } else {
+                TempImage = null;
+            }
         }
         public void SetTempImage(byte[] image) {
             if (image != null) {
@@ -156,7 +160,10 @@ public class CustomLocation : Location {
         public Texture2D GetTempImage() {
             Texture2D tex = new Texture2D(2, 2);
             tex.LoadImage(TempImage);
-            return TempImage == null ? Resources.Load("custom_location_default") as Texture2D : tex;
+            if (TempImage == null) {
+                tex = null;
+            }
+            return tex;
         }
 
         public string GetRealName() {

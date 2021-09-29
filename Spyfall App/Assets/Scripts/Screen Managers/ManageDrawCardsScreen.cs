@@ -85,17 +85,33 @@ public class ManageDrawCardsScreen : MonoBehaviour
     private void BeginCardAnimation() {
         animator.enabled = true;
         animator.Play("CardFlip", -1, (float)framesBeforeAnimation.Count / framesInAnimation);
+
         blurPanel.SetActive(true);
-        blurPanel.GetComponent<BlurController>().DoBlur(BlurController.Fade.fadeIn, ShowCardInfo);
+        Task scaleCard = new Task(ScaleCard());
+        blurPanel.GetComponent<BlurController>().DoBlur(BlurController.Fade.fadeIn, () => ShowCardInfo(scaleCard));
+
+        ManageAudio.Instance.Play("flip");
     }
 
-    private void ShowCardInfo() {
+    private IEnumerator ScaleCard() {
+        // use for loop with i as a fail-safe stop
+        for (int i = 0; i < 50; i++) {
+            float t = blurPanel.GetComponent<BlurController>().Alpha;
+            card.GetComponent<RectTransform>().localScale = Vector3.one * Mathf.SmoothStep(1f, 1.25f, t);
+            yield return new WaitForEndOfFrame();
+        }
+    }
+
+    private void ShowCardInfo(Task scaleCard) {
+        scaleCard.Stop();
+
         string currentRole = manageGame.Players[CardCount].Role;
         Texture2D locationTexture = manageGame.CurrentLocation.GetImage();
         Sprite locationSprite = Sprite.Create(locationTexture, new Rect(0, 0, locationTexture.width, locationTexture.height), new Vector2(0.5f, 0.5f));
         cardInfoImage.sprite = (currentRole == "Spy") ? spySprite : locationSprite;
         cardInfoText.text = (currentRole == "Spy") ? "You are the spy." : $"{manageGame.CurrentLocation.Name}\nRole: {currentRole}";
 
+        ManageAudio.Instance.Play("photo");
         // fade in card info
         cardInfo.GetComponent<CanvasGroupFade>().DoFade(CanvasGroupFade.Fade.fadeIn, () => nextCardButton.gameObject.SetActive(true));
     }
@@ -124,6 +140,7 @@ public class ManageDrawCardsScreen : MonoBehaviour
         blurPanel.SetActive(false);
         image.sprite = framesBeforeAnimation[0];
         card.GetComponent<CanvasGroup>().alpha = 1;
+        card.GetComponent<RectTransform>().localScale = Vector3.one;
         cardInfo.GetComponent<CanvasGroup>().alpha = 0f;
     }
 }

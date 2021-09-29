@@ -18,7 +18,7 @@ public class ManageCustomizeLocationScreen : MonoBehaviour
     [SerializeField] private GameObject drawingElements;
 
     private const float autoScrollSpeed = 0.1f;
-    private const int objectsAfterPlayersInPlayerFields = 3;
+    private const int objectsAfterPlayersInPlayerFields = 4;
 
     private Texture2D defaultImage;
     public Texture2D PreviousImage { get; set; }

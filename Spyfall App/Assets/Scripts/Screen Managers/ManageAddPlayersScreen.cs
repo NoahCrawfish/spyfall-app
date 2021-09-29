@@ -11,7 +11,7 @@ public class ManageAddPlayersScreen : MonoBehaviour
     [SerializeField] private TextMeshProUGUI beginText;
 
     private const float autoScrollSpeed = 0.1f;
-    private const int objectsAfterPlayersInPlayerFields = 3;
+    private const int objectsAfterPlayersInPlayerFields = 4;
 
     public void Initialize() {
         scrollList.GetComponent<ScrollRect>().verticalNormalizedPosition = 1;

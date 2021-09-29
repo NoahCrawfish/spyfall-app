@@ -8,7 +8,7 @@ public class ManageLeaderboard : MonoBehaviour
     [SerializeField] private GameObject nextRoundButton;
 
     private const string rowName = "PlayerScore";
-    private const int elementsBeforeRows = 1;
+    private const int elementsBeforeRows = 2;
     private ManageGame manageGame;
 
     private void Awake() {

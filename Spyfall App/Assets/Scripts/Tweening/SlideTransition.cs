@@ -7,6 +7,7 @@ using DG.Tweening;
 public class SlideTransition : MonoBehaviour
 {
     private RectTransform rect;
+    private float width, height;
     private Vector2 initialPos;
     private static readonly System.Random rand = new System.Random();
 
@@ -27,6 +28,12 @@ public class SlideTransition : MonoBehaviour
     private void Awake() {
         rect = GetComponent<RectTransform>();
         initialPos = rect.anchoredPosition;
+
+        Vector3[] rectCorners = new Vector3[4];
+        rect.GetWorldCorners(rectCorners);
+        Camera cam = FindObjectOfType<Camera>();
+        width = cam.WorldToScreenPoint(rectCorners[2]).x - cam.WorldToScreenPoint(rectCorners[1]).x;
+        height = cam.WorldToScreenPoint(rectCorners[1]).y - cam.WorldToScreenPoint(rectCorners[0]).y;
     }
 
     private void OnEnable() {
@@ -48,16 +55,16 @@ public class SlideTransition : MonoBehaviour
 
         switch (enterSide) {
             case EnterSide.left:
-                fromPos = Vector2.up * initialPos + Vector2.left * (Screen.width + rect.sizeDelta.x) * 0.5f;
+                fromPos = Vector2.up * initialPos + Vector2.left * (Screen.width + width) * 0.5f;
                 break;
             case EnterSide.right:
-                fromPos = Vector2.up * initialPos + Vector2.right * (Screen.width + rect.sizeDelta.x) * 0.5f;
+                fromPos = Vector2.up * initialPos + Vector2.right * (Screen.width + width) * 0.5f;
                 break;
             case EnterSide.top:
-                fromPos = Vector2.right * initialPos + Vector2.up * (Screen.height + rect.sizeDelta.y) * 0.5f;
+                fromPos = Vector2.right * initialPos + Vector2.up * (Screen.height + height) * 0.5f;
                 break;
             case EnterSide.bottom:
-                fromPos = Vector2.right * initialPos + Vector2.down * (Screen.height + rect.sizeDelta.y) * 0.5f;
+                fromPos = Vector2.right * initialPos + Vector2.down * (Screen.height + height) * 0.5f;
                 break;
         }
         rect.anchoredPosition = fromPos;

@@ -106,8 +106,11 @@ public class LocationSetController : MonoBehaviour {
         rectTransform.GetWorldCorners(rectCorners);
         scrollRectTransform.GetWorldCorners(scrollCorners);
 
+        Camera cam = FindObjectOfType<Camera>();
+        float scrollRectHeight = cam.WorldToScreenPoint(scrollCorners[1]).y - cam.WorldToScreenPoint(scrollCorners[0]).y;
+
         float epsilon = 0.0001f;
-        float pixelToNormalized = scrollRectTransform.sizeDelta.y * 0.04f;
+        float pixelToNormalized = scrollRectHeight * 0.04f;
         while (NotWithinEpsilon() && previousScrollPos == scrollRect.verticalNormalizedPosition && scrollRect.gameObject.activeSelf) {
             // autoscroll using asymptotic averaging
             // scroll speed is calibrated for pixels, not normalized

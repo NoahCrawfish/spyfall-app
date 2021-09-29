@@ -1,12 +1,12 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using DG.Tweening;
 using UnityEngine.UI.ProceduralImage;
 
-public class ToggleSwitchController : MonoBehaviour
+public class ToggleSwitchController : MonoBehaviour, IPointerUpHandler
 {
     [SerializeField] RectTransform handleRect;
-    //[SerializeField] ProceduralImage bg;
     [SerializeField] Color handleDefaultColor;
     [SerializeField] Color handleActiveColor;
     [SerializeField] Color bgDefaultColor;
@@ -14,12 +14,12 @@ public class ToggleSwitchController : MonoBehaviour
 
     private Toggle toggle;
     private Vector2 handleStartingPos;
-    //private float startingBorderWidth;
+    private ManageAudio manageAudio;
 
     private void Awake() {
         toggle = GetComponent<Toggle>();
+        manageAudio = FindObjectOfType<ManageAudio>();
         handleStartingPos = handleRect.anchoredPosition;
-        //startingBorderWidth = bg.BorderWidth;
 
         toggle.onValueChanged.AddListener(OnSwitch);
         SupressTween(toggle.isOn);
@@ -37,9 +37,12 @@ public class ToggleSwitchController : MonoBehaviour
         handleRect.DOAnchorMin(on ? new Vector2(1f, 0.5f) : new Vector2(0f, 0.5f), .4f).SetEase(Ease.InOutBack);
         handleRect.DOAnchorMax(on ? new Vector2(1f, 0.5f) : new Vector2(0f, 0.5f), .4f).SetEase(Ease.InOutBack);
         handleRect.DOAnchorPos(on ? Vector2.zero : handleStartingPos, .4f).SetEase(Ease.InOutBack);
-        //DOTween.To(()=> bg.BorderWidth, x=> bg.BorderWidth = x, on ? handleRect.rect.height / 2f : startingBorderWidth, .6f);
         GetComponent<ProceduralImage>().DOColor(on ? bgActiveColor : bgDefaultColor, .6f);
         transform.GetChild(0).GetComponent<ProceduralImage>().DOColor(on ? handleActiveColor : handleDefaultColor, .4f);
+    }
+
+    public void OnPointerUp(PointerEventData eventData) {
+        manageAudio.PlayVariedPitch("click", 0.15f);
     }
 
     private void OnDestroy() {

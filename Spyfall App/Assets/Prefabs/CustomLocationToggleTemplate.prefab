@@ -497,6 +497,7 @@ MonoBehaviour:
   defaultColor: {r: 0.30980393, g: 0.5254902, b: 0.49803922, a: 1}
   pressedColor: {r: 0.9098039, g: 0.48235294, b: 0.10980392, a: 1}
   holdDownWhenSelected: 0
+  alternateSound: 
 --- !u!114 &634465657307146917
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1033,19 +1034,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3496581499867170642}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 11500000, guid: 18a8809c5d66b7c4aa30ea39bbbddb42, type: 3}
-        m_TargetAssemblyTypeName: 
-        m_MethodName: 
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: 
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &3496581499867170642
 MonoBehaviour:
   m_ObjectHideFlags: 0

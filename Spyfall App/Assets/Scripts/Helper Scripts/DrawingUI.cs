@@ -98,11 +98,15 @@ public class DrawingUI : MonoBehaviour {
                 previousTexturePos = texturePos;
             }
             if (texturePos.WithinDrawing() && CanDraw) {
+                ManageAudio.Instance.Unmute("drawing", true);
                 ColorBetween(previousTexturePos, texturePos);
+            } else {
+                ManageAudio.Instance.Mute("drawing", false);
             }
 
             previousTexturePos = texturePos;
         } else {
+            ManageAudio.Instance.Mute("drawing", false);
             previousTexturePos.Reset();
         }
     }
@@ -122,11 +126,15 @@ public class DrawingUI : MonoBehaviour {
                 previousTexturePos = texturePos;
             }
             if (texturePos.WithinDrawing() && CanDraw) {
+                ManageAudio.Instance.Unmute("drawing", true);
                 ColorBetween(previousTexturePos, texturePos);
+            } else {
+                ManageAudio.Instance.Mute("drawing", false);
             }
 
             previousTexturePos = texturePos;
         } else {
+            ManageAudio.Instance.Mute("drawing", false);
             previousTexturePos.Reset();
         }
     }

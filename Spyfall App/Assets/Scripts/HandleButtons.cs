@@ -16,6 +16,7 @@ public class HandleButtons : MonoBehaviour
     [SerializeField] private GameObject winnerScreen;
     [SerializeField] private GameObject settingsScreen;
     [SerializeField] private GameObject customizeLocationScreen;
+    [SerializeField] private GameObject instructionsScreen;
     public GameObject purchasePopup;
 
     private ManageGame manageGame;
@@ -30,6 +31,7 @@ public class HandleButtons : MonoBehaviour
     private ManageSettingsScreen manageSettings;
     private ManageCustomizeLocationScreen manageCustomizeLocation;
     private DrawingUI ThisDrawingUI => FindObjectOfType<DrawingUI>();
+    private ManageAudio manageAudio;
 
     private void Awake() {
         manageGame = FindObjectOfType<ManageGame>();
@@ -43,6 +45,7 @@ public class HandleButtons : MonoBehaviour
         manageWinner = FindObjectOfType<ManageWinnerScreen>();
         manageSettings = FindObjectOfType<ManageSettingsScreen>();
         manageCustomizeLocation = FindObjectOfType<ManageCustomizeLocationScreen>();
+        manageAudio = FindObjectOfType<ManageAudio>();
     }
 
     private CanvasGroup GetCurrentPanel() {
@@ -248,6 +251,7 @@ public class HandleButtons : MonoBehaviour
     }
 
     public void EditCustomLocationButton(GameObject caller) {
+        manageAudio.PlayVariedPitch("click", 0.15f);
         GameObject customLocationToggle = caller.transform.parent.parent.gameObject;
         int index = int.Parse(customLocationToggle.name.Split('_')[1]);
         CustomLocation customLocation = (CustomLocation)manageGame.CustomSet.Locations[index];
@@ -300,5 +304,13 @@ public class HandleButtons : MonoBehaviour
 
     public void BlackColor() {
         ThisDrawingUI.CurrentColor = DrawingUI.Colors.black;
+    }
+
+    public void Instructions() {
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), instructionsScreen.GetComponent<CanvasGroup>());
+    }
+
+    public void Back_Instructions() {
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), mainMenu.GetComponent<CanvasGroup>());
     }
 }

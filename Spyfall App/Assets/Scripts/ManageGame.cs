@@ -70,6 +70,7 @@ public class ManageGame : MonoBehaviour {
     private ManageGameplayScreen manageGameplay;
     private ManageSettingsScreen manageSettings;
     private ManageAddPlayersScreen manageAddPlayers;
+    private ManageAudio manageAudio;
 
     public enum TimerModes { 
         disabled,
@@ -88,6 +89,7 @@ public class ManageGame : MonoBehaviour {
         manageGameplay = FindObjectOfType<ManageGameplayScreen>();
         manageSettings = FindObjectOfType<ManageSettingsScreen>();
         manageAddPlayers = FindObjectOfType<ManageAddPlayersScreen>();
+        manageAudio = FindObjectOfType<ManageAudio>();
     }
 
     private void Start() {
@@ -102,6 +104,8 @@ public class ManageGame : MonoBehaviour {
         LoadSets();
         InitializeLocationsUsing();
         RefreshSettings();
+
+        manageAudio.Play("bg_music", true);
     }
 
     private void OnApplicationFocus(bool focus) {
@@ -235,6 +239,7 @@ public class ManageGame : MonoBehaviour {
 
         // briefly show round screen
         uiTransitions.CrossFadeBetweenPanels(currentPanel, roundScreen.GetComponent<CanvasGroup>());
+        ManageAudio.Instance.Play("next_round");
         if (CurrentRound == MaxRounds && LastRoundMultiplier != 1 && !ScoringDisabled) {
             multiplierText.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = $"{LastRoundMultiplier}X SCORE MULTIPLIER!";
             multiplierText.transform.GetChild(1).GetComponent<TextMeshProUGUI>().text = $"{LastRoundMultiplier}X SCORE MULTIPLIER!";
