@@ -50,18 +50,6 @@ public class ManageGame : MonoBehaviour {
         }
     }
 
-    private string PlatformPathModifier {
-        get {
-            #if UNITY_EDITOR
-                return "Editor-";
-            #elif UNITY_IOS
-                return "iOS-";
-            #elif UNITY_ANDROID
-                return "Android-";
-            #endif
-        }
-    }
-
     private string savePath;
 
     private static readonly System.Random rand = new System.Random();
@@ -93,7 +81,9 @@ public class ManageGame : MonoBehaviour {
     }
 
     private void Start() {
-        savePath = $"{Application.persistentDataPath}/{PlatformPathModifier}";
+        manageAudio.Play("bg_music", true);
+
+        savePath = Application.persistentDataPath;
         if (!Directory.Exists(savePath)) {
             Directory.CreateDirectory(savePath);
         }
@@ -104,8 +94,6 @@ public class ManageGame : MonoBehaviour {
         LoadSets();
         InitializeLocationsUsing();
         RefreshSettings();
-
-        manageAudio.Play("bg_music", true);
     }
 
     private void OnApplicationFocus(bool focus) {
@@ -139,7 +127,7 @@ public class ManageGame : MonoBehaviour {
     private void LoadSets() {
         string filePath;
         foreach (string setName in LocationsAndRoles.setNames) {
-            filePath = $"{savePath}/{StringToPath(setName)}";
+            filePath = $"{savePath}/{StringToPath(setName)}.xml";
             if (File.Exists(filePath)) {
                 LocationSet locationSet = Serialization.LoadViaDataContractSerialization<LocationSet>(filePath);
                 LocationSets.Add(locationSet);
@@ -152,7 +140,7 @@ public class ManageGame : MonoBehaviour {
         }
 
         // load custom set
-        filePath = $"{savePath}/{StringToPath(LocationsAndRoles.customSetName)}";
+        filePath = $"{savePath}/{StringToPath(LocationsAndRoles.customSetName)}.xml";
         CustomSet = File.Exists(filePath) ?
             Serialization.LoadViaDataContractSerialization<CustomLocationSet>(filePath) : new CustomLocationSet(!PaidUnlocked);
 
@@ -164,10 +152,11 @@ public class ManageGame : MonoBehaviour {
         SaveSets();
     }
 
+    // fails on newly intialized LoactionSets
     public void SaveSets() {
         string filePath;
         foreach (var locationSet in LocationSets) {
-            filePath = $"{savePath}/{StringToPath(locationSet.name)}";
+            filePath = $"{savePath}/{StringToPath(locationSet.name)}.xml";
             Serialization.SaveViaDataContractSerialization(locationSet, filePath);
         }
 
@@ -175,7 +164,7 @@ public class ManageGame : MonoBehaviour {
     }
 
     public void SaveCustomSet() {
-        string filePath = $"{savePath}/{StringToPath(LocationsAndRoles.customSetName)}";
+        string filePath = $"{savePath}/{StringToPath(LocationsAndRoles.customSetName)}.xml";
         Serialization.SaveViaDataContractSerialization(CustomSet, filePath);
     }
 
@@ -384,19 +373,5 @@ public static class Extensions {
             return 1;
         }
         return 0;
-    }
-
-    public static Texture2D TextureFromSprite(this Sprite sprite) {
-        if (sprite.rect.width != sprite.texture.width) {
-            Texture2D newText = new Texture2D((int)sprite.rect.width, (int)sprite.rect.height);
-            Color[] newColors = sprite.texture.GetPixels((int)sprite.textureRect.x,
-                                                         (int)sprite.textureRect.y,
-                                                         (int)sprite.textureRect.width,
-                                                         (int)sprite.textureRect.height);
-            newText.SetPixels(newColors);
-            newText.Apply();
-            return newText;
-        } else
-            return sprite.texture;
     }
 }

@@ -1,5 +1,3 @@
-Add How to Play screen
-
 Design promotional popup for paid version
 MAKE VERY APPEALING
 - Video showing off new locations packs
@@ -9,10 +7,7 @@ Create text popup if purchasing is unavailable - handled in IAPManager
 Tweak popup tweening
 
 Build to iphone and test IOS specifics
-- is playerPrefs and xml data saved and loaded correctly
-- do in app purchases work
-- does the timer notification and screen non-dimming work
-- are purchases remembered after uninstall and reinstall - they should, unless I have to read Apple Store reciept specifically
+- are purchases remembered after uninstall and reinstall - they should, unless I have to read Apple Store reciept specifically (not sure how to test)
 
 Final touches:
 Make sure all locations have images

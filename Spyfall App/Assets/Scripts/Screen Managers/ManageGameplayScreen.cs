@@ -18,6 +18,7 @@ public class ManageGameplayScreen : MonoBehaviour
     [SerializeField] private InterstitialAd videoAd;
     [SerializeField] private GameObject quitButton;
     [SerializeField] private GameObject doneButton;
+    [SerializeField] private GameObject footerButtonFrame;
     [SerializeField] private ScrollRect scrollRect;
 
     private int time;
@@ -85,12 +86,22 @@ public class ManageGameplayScreen : MonoBehaviour
 
     private void HideButtons() {
         quitButton.SetActive(false);
-        doneButton.SetActive(false);
+
+        if (manageGame.TimerMode == ManageGame.TimerModes.disabled) {
+            footerButtonFrame.SetActive(false);
+        } else {
+            doneButton.SetActive(false);
+        }
     }
 
     public void ShowButtons() {
         quitButton.SetActive(true);
-        doneButton.SetActive(true);
+
+        if (manageGame.TimerMode == ManageGame.TimerModes.disabled) {
+            footerButtonFrame.SetActive(true);
+        } else {
+            doneButton.SetActive(true);
+        }
     }
 
     private void SetPossibleLocations() {

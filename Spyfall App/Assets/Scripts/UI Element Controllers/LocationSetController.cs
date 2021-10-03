@@ -131,9 +131,9 @@ public class LocationSetController : MonoBehaviour {
 
     // set all location toggles to match set toggle
     public virtual void OnSetToggle(Toggle toggle) {
-        ThisSet.Locations.ForEach(location => location.SettingsUI.toggleValue = toggle.isOn);
+        ThisSet.Locations.Where(location => location.SettingsUI != null).ToList().ForEach(location => location.SettingsUI.toggleValue = toggle.isOn);
         if (Expanded) {
-            ThisSet.Locations.ForEach(location => location.SettingsUI.RefreshToggle());
+            ThisSet.Locations.Where(location => location.SettingsUI != null).ToList().ForEach(location => location.SettingsUI.RefreshToggle());
         }
     }
 

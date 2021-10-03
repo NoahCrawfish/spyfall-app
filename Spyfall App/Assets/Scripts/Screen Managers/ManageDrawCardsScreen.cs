@@ -109,7 +109,7 @@ public class ManageDrawCardsScreen : MonoBehaviour
         Texture2D locationTexture = manageGame.CurrentLocation.GetImage();
         Sprite locationSprite = Sprite.Create(locationTexture, new Rect(0, 0, locationTexture.width, locationTexture.height), new Vector2(0.5f, 0.5f));
         cardInfoImage.sprite = (currentRole == "Spy") ? spySprite : locationSprite;
-        cardInfoText.text = (currentRole == "Spy") ? "You are the spy." : $"{manageGame.CurrentLocation.Name}\nRole: {currentRole}";
+        cardInfoText.text = (currentRole == "Spy") ? "You are the <color=#e87b1c>Spy</color>." : $"{manageGame.CurrentLocation.Name}\nRole: {currentRole}";
 
         ManageAudio.Instance.Play("photo");
         // fade in card info
