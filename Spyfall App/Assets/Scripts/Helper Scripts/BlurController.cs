@@ -30,7 +30,7 @@ public class BlurController : MonoBehaviour
             Alpha = Mathf.Clamp(fadeIn ? Alpha + blurFadeSpeed : Alpha - blurFadeSpeed, 0, 1);
             blur.SetFloat("_Size", Mathf.Lerp(blurStartAmount, blurFinishAmount, Alpha));
             blur.SetColor("_MultiplyColor", LerpColor(tintStart, tintFinish, Alpha));
-            yield return 0;
+            yield return null;
         }
 
         callAfter?.Invoke();

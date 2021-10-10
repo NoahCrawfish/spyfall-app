@@ -54,7 +54,7 @@ public class Location {
 
     // gets location image from resources folder, if none is found it pulls an "image not found" placeholder
     public virtual Texture2D GetImage() {
-        string searchFor = $"spr_{Name.ToLower().Replace(" ", "_")}";
+        string searchFor = $"spr_{Name.ToLower().Replace(" ", "_").Replace("\"", "")}";
         Texture2D image = Resources.Load(searchFor) as Texture2D;
         if (image == null) {
             image = Resources.Load("image_not_found") as Texture2D;

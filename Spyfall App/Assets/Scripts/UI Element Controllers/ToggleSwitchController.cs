@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.EventSystems;
 using DG.Tweening;
 using UnityEngine.UI.ProceduralImage;
+using System.Collections;
 
 public class ToggleSwitchController : MonoBehaviour, IPointerUpHandler
 {
@@ -14,11 +15,10 @@ public class ToggleSwitchController : MonoBehaviour, IPointerUpHandler
 
     private Toggle toggle;
     private Vector2 handleStartingPos;
-    private ManageAudio manageAudio;
+    private bool wasClicked;
 
     private void Awake() {
         toggle = GetComponent<Toggle>();
-        manageAudio = FindObjectOfType<ManageAudio>();
         handleStartingPos = handleRect.anchoredPosition;
 
         toggle.onValueChanged.AddListener(OnSwitch);
@@ -39,10 +39,20 @@ public class ToggleSwitchController : MonoBehaviour, IPointerUpHandler
         handleRect.DOAnchorPos(on ? Vector2.zero : handleStartingPos, .4f).SetEase(Ease.InOutBack);
         GetComponent<ProceduralImage>().DOColor(on ? bgActiveColor : bgDefaultColor, .6f);
         transform.GetChild(0).GetComponent<ProceduralImage>().DOColor(on ? handleActiveColor : handleDefaultColor, .4f);
+
+        if (wasClicked) {
+            ManageAudio.Instance.PlayVariedPitch("click", 0.15f);
+        }
     }
 
     public void OnPointerUp(PointerEventData eventData) {
-        manageAudio.PlayVariedPitch("click", 0.15f);
+        StartCoroutine(WasClicked());
+    }
+
+    private IEnumerator WasClicked() {
+        wasClicked = true;
+        yield return new WaitForEndOfFrame();
+        wasClicked = false;
     }
 
     private void OnDestroy() {

@@ -4,6 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(CanvasGroup))]
 public class CanvasGroupFade : MonoBehaviour {
     [SerializeField, Range(0f, 1f)] private float fadeSpeed = 0.1f;
+    public float Alpha { get; private set; }
     public delegate void AfterEnumerator();
 
     public enum Fade {
@@ -16,10 +17,10 @@ public class CanvasGroupFade : MonoBehaviour {
     }
 
     private IEnumerator GroupFade(bool fadeIn, AfterEnumerator callAfter = null) {
-        float alpha = fadeIn ? 0 : 1;
-        while (fadeIn ? alpha < 1 : alpha > 0) {
-            alpha = Mathf.Clamp(fadeIn ? alpha + fadeSpeed : alpha - fadeSpeed, 0, 1);
-            GetComponent<CanvasGroup>().alpha = alpha;
+        Alpha = fadeIn ? 0 : 1;
+        while (fadeIn ? Alpha < 1 : Alpha > 0) {
+            Alpha = Mathf.Clamp(fadeIn ? Alpha + fadeSpeed : Alpha - fadeSpeed, 0, 1);
+            GetComponent<CanvasGroup>().alpha = Alpha;
             yield return 0;
         }
         callAfter?.Invoke();

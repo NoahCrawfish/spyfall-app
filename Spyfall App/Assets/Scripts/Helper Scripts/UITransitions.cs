@@ -4,23 +4,24 @@ using UnityEngine.UI;
 
 public class UITransitions : MonoBehaviour
 {
-    private const float crossFadeSpeed = 0.25f;
+    private const float crossFadeSpeed = 0.15f;
     private const float dipToColorDissolveSpeed = 0.175f;
     private const float defaultDipToColorWaitTime = 0f;
     public CanvasGroup PreviousScreen { get; private set; }
     [SerializeField] private GameObject clickBlocker; // panel with a canvas group that blocks raycasts; must be the lowest of sibling panels
+    public delegate void DoAfterDelegate();
 
     private enum TransitionModes {
         CrossFade,
         DipToColorDissolve
     }
 
-    public void CrossFadeBetweenPanels(CanvasGroup startPanel, CanvasGroup finishPanel, float speed = crossFadeSpeed, Color? bg = null) {
+    public void CrossFadeBetweenPanels(CanvasGroup startPanel, CanvasGroup finishPanel, float speed = crossFadeSpeed, Color? bg = null, DoAfterDelegate doAfter = null) {
         PreviousScreen = startPanel;
         GetComponent<Image>().color = bg ?? Color.black;
         clickBlocker.SetActive(true);
         Task fadeOutPanel = new Task(FadeOutPanel(startPanel, speed, TransitionModes.CrossFade));
-        Task fadeInPanel = new Task(FadeInPanel(finishPanel, speed, TransitionModes.CrossFade));
+        Task fadeInPanel = new Task(FadeInPanel(finishPanel, speed, TransitionModes.CrossFade, doAfter: doAfter));
         StartCoroutine(DeactivateClickBlocker(fadeOutPanel, fadeInPanel));
     }
 
@@ -50,7 +51,7 @@ public class UITransitions : MonoBehaviour
         }
     }
 
-    private IEnumerator FadeInPanel(CanvasGroup panel, float fadeTime, TransitionModes mode) {
+    private IEnumerator FadeInPanel(CanvasGroup panel, float fadeTime, TransitionModes mode, DoAfterDelegate doAfter = null) {
         float t = 0f;
         panel.alpha = 0;
         panel.gameObject.SetActive(true);
@@ -64,6 +65,10 @@ public class UITransitions : MonoBehaviour
 
         if (mode == TransitionModes.DipToColorDissolve) {
             clickBlocker.SetActive(false);
+        }
+
+        if (doAfter != null) {
+            doAfter.Invoke();
         }
     }
 

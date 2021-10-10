@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UI.ProceduralImage;
 using TMPro;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.AddressableAssets;
 
 public class ManageDrawCardsScreen : MonoBehaviour
 {
@@ -13,7 +15,8 @@ public class ManageDrawCardsScreen : MonoBehaviour
     [SerializeField] GameObject drawCardsScreen;
     [SerializeField] List<Sprite> framesBeforeAnimation;
     [SerializeField] GameObject card;
-    public GameObject blurPanel;
+    private GameObject blurPanel;
+    [SerializeField] private GameObject blurPanelFrame;
     [SerializeField] TextMeshProUGUI playerPrompt;
     [SerializeField] TextMeshProUGUI playerPromptShadow1;
     [SerializeField] TextMeshProUGUI playerPromptShadow2;
@@ -64,7 +67,7 @@ public class ManageDrawCardsScreen : MonoBehaviour
                         stage = Mathf.Clamp(stage, 0, framesBeforeAnimation.Count - 1);
 
                         image.sprite = framesBeforeAnimation[stage];
-                        if (percentSwiped >= 1) {
+                        if (!animator.enabled && percentSwiped >= 1) {
                             BeginCardAnimation();
                         }
                         break;
@@ -86,12 +89,25 @@ public class ManageDrawCardsScreen : MonoBehaviour
         animator.enabled = true;
         animator.Play("CardFlip", -1, (float)framesBeforeAnimation.Count / framesInAnimation);
 
-        blurPanel.SetActive(true);
+        AsyncOperationHandle<GameObject> blurHandle = Addressables.InstantiateAsync("BlurPanel");
+        blurHandle.Completed += BlurPanelLoaded;
+    }
+
+    private void BlurPanelLoaded(AsyncOperationHandle<GameObject> handle) {
+        blurPanel = handle.Result;
+        blurPanel.transform.SetParent(blurPanelFrame.transform, false);
+
         Task scaleCard = new Task(ScaleCard());
         blurPanel.GetComponent<BlurController>().DoBlur(BlurController.Fade.fadeIn, () => ShowCardInfo(scaleCard));
-
         ManageAudio.Instance.Play("flip");
     }
+
+    public void UnloadBlurPanel() {
+        if (blurPanel != null) {
+            Addressables.ReleaseInstance(blurPanel);
+        }
+    }
+
 
     private IEnumerator ScaleCard() {
         // use for loop with i as a fail-safe stop
@@ -109,7 +125,12 @@ public class ManageDrawCardsScreen : MonoBehaviour
         Texture2D locationTexture = manageGame.CurrentLocation.GetImage();
         Sprite locationSprite = Sprite.Create(locationTexture, new Rect(0, 0, locationTexture.width, locationTexture.height), new Vector2(0.5f, 0.5f));
         cardInfoImage.sprite = (currentRole == "Spy") ? spySprite : locationSprite;
-        cardInfoText.text = (currentRole == "Spy") ? "You are the <color=#e87b1c>Spy</color>." : $"{manageGame.CurrentLocation.Name}\nRole: {currentRole}";
+
+        string roleLabel = "Role";
+        if (manageGame.CurrentLocation.Name == "Hell" && currentRole != "Devil") {
+            roleLabel = "Sin";
+        }
+        cardInfoText.text = (currentRole == "Spy") ? "You are the <color=#e87b1c>Spy</color>." : $"{manageGame.CurrentLocation.Name}\n{roleLabel}: {currentRole}";
 
         ManageAudio.Instance.Play("photo");
         // fade in card info
@@ -117,7 +138,6 @@ public class ManageDrawCardsScreen : MonoBehaviour
     }
 
     public void NextCard() {
-        nextCardButton.gameObject.SetActive(false);
         CardCount += 1;
         UpdatePrompts();
 
@@ -137,7 +157,7 @@ public class ManageDrawCardsScreen : MonoBehaviour
 
     private void ResetCardAnimation() {
         animator.enabled = false;
-        blurPanel.SetActive(false);
+        UnloadBlurPanel();
         image.sprite = framesBeforeAnimation[0];
         card.GetComponent<CanvasGroup>().alpha = 1;
         card.GetComponent<RectTransform>().localScale = Vector3.one;

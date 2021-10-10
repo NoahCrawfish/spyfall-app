@@ -132,6 +132,10 @@ public class DrawingUI : MonoBehaviour {
                 ManageAudio.Instance.Mute("drawing", false);
             }
 
+            if (Input.GetTouch(0).phase == TouchPhase.Ended) {
+                modifiedPixels = new bool[imagePixels.x * imagePixels.y];
+            }
+
             previousTexturePos = texturePos;
         } else {
             ManageAudio.Instance.Mute("drawing", false);

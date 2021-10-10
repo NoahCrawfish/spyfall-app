@@ -20,13 +20,17 @@ public class ManageGameplayScreen : MonoBehaviour
     [SerializeField] private GameObject doneButton;
     [SerializeField] private GameObject footerButtonFrame;
     [SerializeField] private ScrollRect scrollRect;
+    [SerializeField] private TextMeshProUGUI startingPlayer;
 
-    private int time;
+    private int startingTime;
+    private int elapsedTime = 0;
+    public Task timerTask;
     private ManageGame manageGame;
 #if UNITY_IOS
     iOSNotification notification;
 #endif
-    private Task adBuffer;
+
+    private readonly static System.Random rand = new System.Random();
 
     private void Awake() {
         manageGame = FindObjectOfType<ManageGame>();
@@ -56,32 +60,20 @@ public class ManageGameplayScreen : MonoBehaviour
         SetPossibleLocations();
         timerText.GetComponent<FlashText>().flashSpeed = 0f;
         scrollRect.verticalNormalizedPosition = 1;
-        // schedule ad if the the full version hasn't been unlocked
+        timerTask = null;
+
+        SetStartingPlayerText();
+
         if (!manageGame.PaidUnlocked) {
             HideButtons();
-            adBuffer = new Task(ShowAdDelayed());
         }
 
-        if (manageGame.TimerMode != ManageGame.TimerModes.disabled) {
-            timerText.transform.parent.gameObject.SetActive(true);
-
-            time = manageGame.TimerSeconds;
-            if (manageGame.TimerMode == ManageGame.TimerModes.perPlayer) {
-                time *= manageGame.Players.Count;
-            }
-            StartCoroutine(UpdateTimer());
-        } else {
-            TimerDisabled();
-        }
+        timerTask = new Task(TrackElapsedTime(manageGame.TimerMode != ManageGame.TimerModes.disabled));
     }
 
-    private IEnumerator ShowAdDelayed() {
-        yield return new WaitForSeconds(5);
-        videoAd.StartLoadAd();
-    }
-
-    public void CancelAdBuffer() {
-        adBuffer?.Stop();
+    private void SetStartingPlayerText() {
+        string randPlayer = manageGame.Players[rand.Next(manageGame.Players.Count)].Name;
+        startingPlayer.text = $"{randPlayer} asks the first question.";
     }
 
     private void HideButtons() {
@@ -105,14 +97,14 @@ public class ManageGameplayScreen : MonoBehaviour
     }
 
     private void SetPossibleLocations() {
-        string text = "";
-        foreach (var locationSet in manageGame.LocationSets.Concat(new List<CustomLocationSet>{ manageGame.CustomSet }).ToList()) {
-            foreach (var location in locationSet.Locations) {
-                if (location.enabled) {
-                    text += $"- {location.Name}\n";
-                }
-            }
+        // compile list of enabled location names
+        List<string> locations = new List<string>();
+        foreach (var locationSet in manageGame.LocationSets.Concat(new List<CustomLocationSet> { manageGame.CustomSet }).ToList()) {
+            locationSet.Locations.Where(location => location.enabled).ToList().ForEach(location => locations.Add(location.Name));
         }
+
+        string text = "";
+        locations.OrderBy(x => x).ToList().ForEach(name => text += $"- {name}\n");
         // remove last new line
         text = text.Remove(text.Length - 1);
 
@@ -121,28 +113,58 @@ public class ManageGameplayScreen : MonoBehaviour
         content.GetComponent<VerticalLayoutGroup>().spacing += 0.01f;
     }
 
-    private IEnumerator UpdateTimer() {
-        yield return 0;
-        while (gameplayScreen.activeSelf && time > 0) {
-            int minutes = time / 60;
-            int seconds = time - minutes * 60;
-            timerText.text = $"{minutes:D2}:{seconds:D2}";
-            time -= 1;
+
+    private IEnumerator TrackElapsedTime(bool timerEnabled) {
+        InitializeTimer(timerEnabled);
+
+        elapsedTime = 0;
+        while (gameplayScreen.activeSelf) {
+            if (timerEnabled) {
+                UpdateTimer();
+            }
+
+            if (elapsedTime == 10 && !manageGame.PaidUnlocked) {
+                videoAd.StartLoadAd();
+            }
 
             yield return new WaitForSecondsRealtime(1f);
-            if (time == 0) {
-                TimerFinished();
-            }
+            elapsedTime += 1;
         }
     }
 
-    public void UpdateTimerFromPause() {
-        if (gameplayScreen.activeSelf && time > 0) {
-            int deltaTime = Mathf.RoundToInt((float)(manageGame.UnpauseTime - manageGame.PauseTime).TotalSeconds);
-            time -= deltaTime;
-            if (time <= 0) {
-                TimerFinished();
+    private void InitializeTimer(bool timerEnabled) {
+        startingTime = 0;
+
+        if (timerEnabled) {
+            timerText.transform.parent.gameObject.SetActive(true);
+
+            startingTime = manageGame.TimerSeconds;
+            if (manageGame.TimerMode == ManageGame.TimerModes.perPlayer) {
+                startingTime *= manageGame.Players.Count;
             }
+        } else {
+            TimerDisabled();
+        }
+    }
+
+    private void UpdateTimer() {
+        int time = startingTime - elapsedTime;
+
+        if (elapsedTime < startingTime) {
+            int minutes = time / 60;
+            int seconds = time - minutes * 60;
+            timerText.text = $"{minutes:D2}:{seconds:D2}";
+        } else if (startingTime - elapsedTime == 0) {
+            TimerFinished();
+        }
+    }
+
+
+    public void UpdateTimerFromPause() {
+        if (gameplayScreen.activeSelf && elapsedTime < startingTime) {
+            int deltaTime = Mathf.RoundToInt((float)(manageGame.UnpauseTime - manageGame.PauseTime).TotalSeconds);
+            elapsedTime += deltaTime;
+            UpdateTimer();
         }
     }
 
@@ -159,5 +181,14 @@ public class ManageGameplayScreen : MonoBehaviour
 
     private void TimerDisabled() {
         timerText.transform.parent.gameObject.SetActive(false);
+    }
+
+    // called from inspector
+    public void PauseScreen() {
+        timerTask?.Pause();
+    }
+
+    public void UnpauseScreen() {
+        timerTask?.Unpause();
     }
 }

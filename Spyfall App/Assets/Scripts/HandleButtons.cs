@@ -79,6 +79,7 @@ public class HandleButtons : MonoBehaviour
     }
 
     public void Begin() {
+        manageGame.InitializeLocationsUsing();
         if (manageGame.LocationsUsing.Count > 0) {
             // unique first-round setup
             manageGame.CreatePlayerList();
@@ -92,11 +93,12 @@ public class HandleButtons : MonoBehaviour
     }
 
     public void NextCardButton() {
+        manageDrawCards.nextCardButton.SetActive(false);
+
         if (manageDrawCards.CardCount < manageGame.Players.Count - 1) {
             manageDrawCards.NextCard();
         } else {
-            manageDrawCards.nextCardButton.SetActive(false);
-            manageDrawCards.blurPanel.SetActive(false);
+            manageDrawCards.UnloadBlurPanel();
             Screen.sleepTimeout = SleepTimeout.NeverSleep;
             uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), gameplayScreen.GetComponent<CanvasGroup>());
             manageGameplay.InitializeScreen();
@@ -104,7 +106,7 @@ public class HandleButtons : MonoBehaviour
     }
 
     public void DoneWithRound() {
-        manageGameplay.CancelAdBuffer();
+        //manageGameplay.timerTask.Stop();
         Screen.sleepTimeout = SleepTimeout.SystemSetting;
 
         if (!manageGame.ScoringDisabled) {
@@ -311,6 +313,10 @@ public class HandleButtons : MonoBehaviour
     }
 
     public void Back_Instructions() {
-        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), mainMenu.GetComponent<CanvasGroup>());
+        if (uiTransitions.PreviousScreen.gameObject == gameplayScreen) {
+            uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), uiTransitions.PreviousScreen, doAfter: manageGameplay.UnpauseScreen);
+        } else {
+            uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), uiTransitions.PreviousScreen);
+        }
     }
 }

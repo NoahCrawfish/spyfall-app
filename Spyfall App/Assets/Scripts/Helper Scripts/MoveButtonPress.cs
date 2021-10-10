@@ -16,20 +16,29 @@ public class MoveButtonPress : MonoBehaviour, ISelectHandler, IDeselectHandler, 
     [SerializeField] private string alternateSound;
 
     private Selectable selectable;
-    private ManageAudio manageAudio;
+    private Button button;
 
     private void Awake() {
         rectTransform = transform.Find("Renderer").GetComponent<RectTransform>();
         shadowRect = transform.Find("Shadow").GetComponent<RectTransform>();
         rendererImage = transform.Find("Renderer").GetComponent<ProceduralImage>();
         selectable = GetComponent<Selectable>();
-
-        manageAudio = FindObjectOfType<ManageAudio>();
+        button = GetComponent<Button>();
     }
 
     private void Start() {
         startingOffsetMin = new Vector2(rectTransform.offsetMin.x, rectTransform.offsetMin.y);
         startingOffsetMax = new Vector2(rectTransform.offsetMax.x, rectTransform.offsetMax.y);
+    }
+
+    private void OnEnable() {
+        if (button != null) {
+            button.onClick.AddListener(PlaySound);
+        }
+    }
+
+    private void PlaySound() {
+        ManageAudio.Instance.PlayVariedPitch(alternateSound == "" ? "click" : alternateSound, 0.15f);
     }
 
     public void OnPointerDown(PointerEventData eventData) {
@@ -41,14 +50,13 @@ public class MoveButtonPress : MonoBehaviour, ISelectHandler, IDeselectHandler, 
     public void OnPointerUp(PointerEventData eventData) {
         if (!holdDownWhenSelected && selectable.interactable) {
             Up();
-            manageAudio.PlayVariedPitch(alternateSound == "" ? "click" : alternateSound, 0.15f);
         }
     }
 
     public void OnSelect(BaseEventData eventData) {
         if (holdDownWhenSelected && selectable.interactable) {
             Down();
-            manageAudio.PlayVariedPitch(alternateSound == "" ? "click" : alternateSound, 0.15f);
+            ManageAudio.Instance.PlayVariedPitch("click", 0.15f);
         }
     }
 

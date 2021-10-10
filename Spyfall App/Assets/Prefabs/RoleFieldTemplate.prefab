@@ -292,6 +292,7 @@ MonoBehaviour:
   defaultColor: {r: 0.18431373, g: 0.18431373, b: 0.1764706, a: 1}
   pressedColor: {r: 0.30980393, g: 0.5254902, b: 0.49803922, a: 1}
   holdDownWhenSelected: 1
+  alternateSound: 
 --- !u!114 &310055414871154472
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -907,6 +908,7 @@ MonoBehaviour:
   defaultColor: {r: 0.9098039, g: 0.48235294, b: 0.10980392, a: 1}
   pressedColor: {r: 0.30980393, g: 0.5254902, b: 0.49803922, a: 1}
   holdDownWhenSelected: 0
+  alternateSound: trash
 --- !u!1 &6583033485426960580
 GameObject:
   m_ObjectHideFlags: 0
@@ -1183,7 +1185,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 58.4
+  m_fontSize: 18
   m_fontSizeBase: 109.07
   m_fontWeight: 400
   m_enableAutoSizing: 1

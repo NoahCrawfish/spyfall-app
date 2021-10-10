@@ -1,3 +1,7 @@
+rewrite locations and roles
+OPTIONAL BUT PROBABLY GOOD IDEAS:
+- add fill bucket to drawing
+
 Design promotional popup for paid version
 MAKE VERY APPEALING
 - Video showing off new locations packs
@@ -17,3 +21,13 @@ Make sure all controls are configured for iOS
 Finalize Monetization page of Unity Dashboard - ex. Add store ID
 
 Create app store graphics
+
+"Pass and Play Spyfall"
+- customizeable game settings
+- over x locations and over x roles
+- create your own custom locations
+- instructions
+- automatic scoring
+- 3+ Players
+- Social deception game
+- fun fact: there's a spy hidden in every location image, can you find them all?

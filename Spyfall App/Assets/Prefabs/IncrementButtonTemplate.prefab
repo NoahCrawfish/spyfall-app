@@ -402,7 +402,7 @@ GameObject:
   - component: {fileID: 1419455805147525653}
   - component: {fileID: 1419455805147525739}
   m_Layer: 5
-  m_Name: IncrementButton
+  m_Name: IncrementButtonTemplate
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
