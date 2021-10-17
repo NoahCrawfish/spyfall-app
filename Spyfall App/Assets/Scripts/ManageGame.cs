@@ -15,7 +15,9 @@ public class ManageGame : MonoBehaviour {
     [SerializeField] private GameObject playerFields;
     [SerializeField] private TextMeshProUGUI roundText;
     [SerializeField] private GameObject multiplierText;
+    [SerializeField] private GameObject removeAdsButton;
     public PurchasePopupController purchasePopup;
+    public PurchasePopupController purchasePopup2;
 
     private const float roundScreenTime = 1f;
     public List<Player> Players { get; private set; } = new List<Player>();
@@ -51,6 +53,10 @@ public class ManageGame : MonoBehaviour {
     }
 
     private string savePath;
+
+    private const string reviewRequestKey = "review_request_count";
+    private const string reviewRequestTierKey = "review_request_tier";
+    private readonly int[] roundsToReviewRequest = new int[] { 6, 15, 30 };
 
     private static readonly System.Random rand = new System.Random();
     private UITransitions uiTransitions;
@@ -119,6 +125,24 @@ public class ManageGame : MonoBehaviour {
         Paused = pause;
     }
 
+#if UNITY_EDITOR
+    private void Update() {
+        int i = 0;
+
+        if (Input.GetKeyDown("p")) {
+            while (File.Exists(GetSavePath())) {
+                i++;
+            }
+            ScreenCapture.CaptureScreenshot(GetSavePath());
+            Debug.Log($"Successfully captured screenshot {i}");
+        }
+
+        string GetSavePath() {
+            return $"{Directory.GetParent(Application.dataPath)}/Screenshots/screenshot_{i}.png";
+        }
+    }
+#endif
+
 
     private string StringToPath(string input) {
         return input.ToLower().Replace(' ', '_');
@@ -147,6 +171,7 @@ public class ManageGame : MonoBehaviour {
         if (!CustomSet.locked) {
             // set by private backing value to not retrigger UnlockFullVersion method
             paidUnlocked = true;
+            removeAdsButton.SetActive(false);
         }
 
         SaveSets();
@@ -307,6 +332,36 @@ public class ManageGame : MonoBehaviour {
         CustomSet.locked = false;
         manageSettings.SaveLocationStatesAndSet();
         StartCoroutine(manageSettings.RefreshAllSets());
+
+        removeAdsButton.SetActive(false);
+    }
+
+
+    public void UpdateReviewRequestCount() {
+        int requestCount = PlayerPrefs.GetInt(reviewRequestKey, roundsToReviewRequest[0]);
+        requestCount--;
+        PlayerPrefs.SetInt(reviewRequestKey, requestCount);
+        Debug.Log($"{requestCount} rounds until review request");
+    }
+
+    public void CheckForReviewRequest() {
+        int requestCount = PlayerPrefs.GetInt(reviewRequestKey, roundsToReviewRequest[0]);
+
+        // ask for review
+        if (requestCount <= 0) {
+            #if UNITY_IOS
+                UnityEngine.iOS.Device.RequestStoreReview();
+            #endif
+            ResetReviewRequestCount();
+        }
+    }
+
+    private void ResetReviewRequestCount() {
+        int requestTier = PlayerPrefs.GetInt(reviewRequestTierKey, 0);
+        requestTier = Mathf.Clamp(requestTier + 1, 0, roundsToReviewRequest.Length - 1);
+        PlayerPrefs.SetInt(reviewRequestKey, roundsToReviewRequest[requestTier]);
+        PlayerPrefs.SetInt(reviewRequestTierKey, requestTier);
+        Debug.Log($"updated to request tier {requestTier} with {roundsToReviewRequest[requestTier]} rounds until review request");
     }
 }
 

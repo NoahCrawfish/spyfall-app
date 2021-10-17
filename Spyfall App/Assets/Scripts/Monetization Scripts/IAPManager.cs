@@ -18,22 +18,50 @@ public class IAPManager : IStoreListener {
     public void PurchaseProVersion() {
         if (controller != null) {
             controller.InitiatePurchase(proVersionID);
-        } else {
-            // show this on UI, add when making popup design
-            Debug.Log("Purchasing currently unavailable. Check your internet connection and try again.");
+        } else if (manageGame.purchasePopup.gameObject.activeSelf) {
+            manageGame.purchasePopup.SetButtonText(PurchasePopupController.ButtonMessage.unavailable);
+        } else if (manageGame.purchasePopup2.gameObject.activeSelf) {
+            manageGame.purchasePopup2.SetButtonText(PurchasePopupController.ButtonMessage.unavailable);
+        }
+    }
+
+    public void OnPurchaseFailed(Product i, PurchaseFailureReason p) {
+        if (manageGame.purchasePopup.gameObject.activeSelf) {
+            manageGame.purchasePopup.SetButtonText(PurchasePopupController.ButtonMessage.whoops);
+        } else if (manageGame.purchasePopup2.gameObject.activeSelf) {
+            manageGame.purchasePopup2.SetButtonText(PurchasePopupController.ButtonMessage.whoops);
         }
     }
 
     public void OnInitialized(IStoreController controller, IExtensionProvider extensions) {
         this.controller = controller;
         manageGame.PaidUnlocked = GetProVersionPurchased();
+
+        #if UNITY_IOS
+            // restore transactions
+            if (!manageGame.PaidUnlocked) {
+                extensions.GetExtension<IAppleExtensions>().RestoreTransactions(result => {
+                    if (result) {
+                        Debug.Log("Restore Transactions Success");
+                    } else {
+                        Debug.Log("Restore Transactions Failure");
+                    }
+                });
+            }
+        #endif
     }
 
     // called when a purchase completes
     public PurchaseProcessingResult ProcessPurchase(PurchaseEventArgs e) {
         // unlock functionality in PaidUnlocked setter
         manageGame.PaidUnlocked = GetProVersionPurchased();
-        manageGame.purchasePopup.ClosePopup();
+
+        if (manageGame.purchasePopup.gameObject.activeSelf) {
+            manageGame.purchasePopup.ClosePopup();
+        }
+        if (manageGame.purchasePopup2.gameObject.activeSelf) {
+            manageGame.purchasePopup2.ClosePopup();
+        }
         return PurchaseProcessingResult.Complete;
     }
 
@@ -43,5 +71,4 @@ public class IAPManager : IStoreListener {
     }
 
     public void OnInitializeFailed(InitializationFailureReason error) { }
-    public void OnPurchaseFailed(Product i, PurchaseFailureReason p) { }
 }

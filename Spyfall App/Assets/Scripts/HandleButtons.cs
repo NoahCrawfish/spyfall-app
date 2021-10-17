@@ -106,8 +106,8 @@ public class HandleButtons : MonoBehaviour
     }
 
     public void DoneWithRound() {
-        //manageGameplay.timerTask.Stop();
         Screen.sleepTimeout = SleepTimeout.SystemSetting;
+        manageGame.UpdateReviewRequestCount();
 
         if (!manageGame.ScoringDisabled) {
             uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), scoringScreen1.GetComponent<CanvasGroup>());
@@ -116,10 +116,15 @@ public class HandleButtons : MonoBehaviour
             if (manageGame.CurrentRound < manageGame.MaxRounds) {
                 StartCoroutine(manageGame.StartNextRound(GetCurrentPanel()));
             } else {
-                manageAddPlayers.Initialize();
-                uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), addPlayersScreen.GetComponent<CanvasGroup>());
+                GameDone();
             }
         }
+    }
+
+    private void GameDone() {
+        manageAddPlayers.Initialize();
+        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), addPlayersScreen.GetComponent<CanvasGroup>());
+        manageGame.CheckForReviewRequest();
     }
 
     public void SkipScoring() {
@@ -192,8 +197,7 @@ public class HandleButtons : MonoBehaviour
     }
 
     public void GameFinishedButton() {
-        manageAddPlayers.Initialize();
-        uiTransitions.CrossFadeBetweenPanels(GetCurrentPanel(), addPlayersScreen.GetComponent<CanvasGroup>());
+        GameDone();
     }
 
     public void MinusButton(GameObject caller) {

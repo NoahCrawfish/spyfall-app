@@ -1,17 +1,8 @@
-rewrite locations and roles
-OPTIONAL BUT PROBABLY GOOD IDEAS:
-- add fill bucket to drawing
-
 Design promotional popup for paid version
 MAKE VERY APPEALING
 - Video showing off new locations packs
 - Video showing off custom locations
-NO SCROLLING - TOO MUCH OF A BARRIER TO PURCHASE
-Create text popup if purchasing is unavailable - handled in IAPManager
 Tweak popup tweening
-
-Build to iphone and test IOS specifics
-- are purchases remembered after uninstall and reinstall - they should, unless I have to read Apple Store reciept specifically (not sure how to test)
 
 Final touches:
 Make sure all locations have images
@@ -19,15 +10,14 @@ Reset game to free version
 Disable test mode for ads in Unity Dashboard
 Make sure all controls are configured for iOS
 Finalize Monetization page of Unity Dashboard - ex. Add store ID
+Move screenshots out of app folder to reduce build size
 
 Create app store graphics
+- app icon
+- app store promotion icon
+- screenshots
+- preview
 
-"Pass and Play Spyfall"
-- customizeable game settings
-- over x locations and over x roles
-- create your own custom locations
-- instructions
-- automatic scoring
-- 3+ Players
-- Social deception game
-- fun fact: there's a spy hidden in every location image, can you find them all?
+Port to Google Play store
+Build landing page (create website for company but searches go directly to Secret Spy page)
+Create localized verions to tap foreign markets with low retention/interaction
