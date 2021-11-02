@@ -8,7 +8,7 @@ public class IAPManager : IStoreListener {
 
     public IAPManager(ManageGame manageGame) {
         this.manageGame = manageGame;
-        StandardPurchasingModule.Instance().useFakeStoreAlways = true;
+        //StandardPurchasingModule.Instance().useFakeStoreAlways = true;
         //StandardPurchasingModule.Instance().useFakeStoreUIMode = FakeStoreUIMode.DeveloperUser;
         var builder = ConfigurationBuilder.Instance(StandardPurchasingModule.Instance());
         builder.AddProduct(proVersionID, ProductType.NonConsumable);

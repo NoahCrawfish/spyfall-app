@@ -9,6 +9,7 @@ public class ManageLeaderboard : MonoBehaviour
 
     private const string rowName = "PlayerScore";
     private const int elementsBeforeRows = 2;
+    private const int elementsAfterRows = 1;
     private ManageGame manageGame;
 
     private void Awake() {
@@ -17,13 +18,15 @@ public class ManageLeaderboard : MonoBehaviour
 
     public void RefreshLeaderboard() {
         foreach (Transform child in leaderboard.transform) {
-            if (child.name == rowName) {
+            if (child.name == rowName || child.name == $"Spacer(Clone)") {
                 Destroy(child.gameObject);
             }
         }
 
         foreach (var player in manageGame.Players) {
             GameObject row = Instantiate(playerScorePrefab, leaderboard.transform);
+            row.transform.SetSiblingIndex(leaderboard.transform.childCount - (elementsAfterRows + 1));
+
             row.name = rowName;
             row.transform.GetChild(0).Find("Renderer").GetChild(0).GetComponent<TextMeshProUGUI>().text = player.Name;
             row.transform.GetChild(1).Find("Renderer").GetChild(0).GetComponent<TextMeshProUGUI>().text = player.Score.ToString();

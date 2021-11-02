@@ -88,10 +88,13 @@ public class DrawingUI : MonoBehaviour {
             RectTransform drawingRect = drawingCanvas.GetComponent<RectTransform>();
             Vector3[] drawingRectCorners = new Vector3[4];
             drawingRect.GetWorldCorners(drawingRectCorners);
+
             Vector2 drawingTopLeft = cam.WorldToScreenPoint(drawingRectCorners[1]);
+            Vector2 drawingBottomRight = cam.WorldToScreenPoint(drawingRectCorners[3]);
+            Vector2 drawingSize = (drawingBottomRight - drawingTopLeft) * new Vector2(1, -1);
 
             Vector2 clickPos = ((Vector2)Input.mousePosition - drawingTopLeft) * new Vector2(1, -1);
-            Vector2 normalizedClickPos = new Vector2(clickPos.x / drawingRect.sizeDelta.x, clickPos.y / drawingRect.sizeDelta.y);
+            Vector2 normalizedClickPos = new Vector2(clickPos.x / drawingSize.x, clickPos.y / drawingSize.y);
             Vector2Int texturePos = new Vector2(normalizedClickPos.x * imagePixels.x, normalizedClickPos.y * imagePixels.y).RoundToInt();
 
             if (previousTexturePos.IsReset()) {
@@ -116,10 +119,13 @@ public class DrawingUI : MonoBehaviour {
             RectTransform drawingRect = drawingCanvas.GetComponent<RectTransform>();
             Vector3[] drawingRectCorners = new Vector3[4];
             drawingRect.GetWorldCorners(drawingRectCorners);
+
             Vector2 drawingTopLeft = cam.WorldToScreenPoint(drawingRectCorners[1]);
+            Vector2 drawingBottomRight = cam.WorldToScreenPoint(drawingRectCorners[3]);
+            Vector2 drawingSize = (drawingBottomRight - drawingTopLeft) * new Vector2(1, -1);
 
             Vector2 clickPos = (Input.GetTouch(0).position - drawingTopLeft) * new Vector2(1, -1);
-            Vector2 normalizedClickPos = new Vector2(clickPos.x / drawingRect.sizeDelta.x, clickPos.y / drawingRect.sizeDelta.y);
+            Vector2 normalizedClickPos = new Vector2(clickPos.x / drawingSize.x, clickPos.y / drawingSize.y);
             Vector2Int texturePos = new Vector2(normalizedClickPos.x * imagePixels.x, normalizedClickPos.y * imagePixels.y).RoundToInt();
 
             if (previousTexturePos.IsReset()) {

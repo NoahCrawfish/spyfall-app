@@ -6,6 +6,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Xml;
 using UnityEngine;
+using UnityEngine.Video;
 using TMPro;
 
 public class ManageGame : MonoBehaviour {
@@ -16,6 +17,7 @@ public class ManageGame : MonoBehaviour {
     [SerializeField] private TextMeshProUGUI roundText;
     [SerializeField] private GameObject multiplierText;
     [SerializeField] private GameObject removeAdsButton;
+    [SerializeField] private List<VideoPlayer> videoPlayers = new List<VideoPlayer>();
     public PurchasePopupController purchasePopup;
     public PurchasePopupController purchasePopup2;
 
@@ -27,7 +29,7 @@ public class ManageGame : MonoBehaviour {
     public DateTime PauseTime { get; private set; }
     public DateTime UnpauseTime { get; private set; }
     public IAPManager IapManager { get; private set; }
-    
+
     // current round
     public int CurrentRound { get; private set; } = 0;
     public Location CurrentLocation { get; private set; }
@@ -66,7 +68,7 @@ public class ManageGame : MonoBehaviour {
     private ManageAddPlayersScreen manageAddPlayers;
     private ManageAudio manageAudio;
 
-    public enum TimerModes { 
+    public enum TimerModes {
         disabled,
         perPlayer,
         setAmount
@@ -88,6 +90,7 @@ public class ManageGame : MonoBehaviour {
 
     private void Start() {
         manageAudio.Play("bg_music", true);
+        PrepareVideo();
 
         savePath = Application.persistentDataPath;
         if (!Directory.Exists(savePath)) {
@@ -124,6 +127,11 @@ public class ManageGame : MonoBehaviour {
         }
         Paused = pause;
     }
+
+    private void PrepareVideo() {
+        videoPlayers.ForEach(player => player.Prepare());
+    }
+
 
 #if UNITY_EDITOR
     private void Update() {
@@ -341,7 +349,7 @@ public class ManageGame : MonoBehaviour {
         int requestCount = PlayerPrefs.GetInt(reviewRequestKey, roundsToReviewRequest[0]);
         requestCount--;
         PlayerPrefs.SetInt(reviewRequestKey, requestCount);
-        Debug.Log($"{requestCount} rounds until review request");
+        //Debug.Log($"{requestCount} rounds until review request");
     }
 
     public void CheckForReviewRequest() {
@@ -361,7 +369,7 @@ public class ManageGame : MonoBehaviour {
         requestTier = Mathf.Clamp(requestTier + 1, 0, roundsToReviewRequest.Length - 1);
         PlayerPrefs.SetInt(reviewRequestKey, roundsToReviewRequest[requestTier]);
         PlayerPrefs.SetInt(reviewRequestTierKey, requestTier);
-        Debug.Log($"updated to request tier {requestTier} with {roundsToReviewRequest[requestTier]} rounds until review request");
+        //Debug.Log($"updated to request tier {requestTier} with {roundsToReviewRequest[requestTier]} rounds until review request");
     }
 }
 

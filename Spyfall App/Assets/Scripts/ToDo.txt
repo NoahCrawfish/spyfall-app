@@ -1,23 +1,9 @@
-Design promotional popup for paid version
-MAKE VERY APPEALING
-- Video showing off new locations packs
-- Video showing off custom locations
-Tweak popup tweening
-
-Final touches:
-Make sure all locations have images
-Reset game to free version
-Disable test mode for ads in Unity Dashboard
-Make sure all controls are configured for iOS
-Finalize Monetization page of Unity Dashboard - ex. Add store ID
-Move screenshots out of app folder to reduce build size
-
-Create app store graphics
-- app icon
-- app store promotion icon
-- screenshots
-- preview
+ONCE 100% sure the game is done:
+Clear player prefs and location set data
+Remove usefakestoryalways in IAPManager
+Disable test mode for ads in Unity Monetization - Overview - Settings
+Add store ID to Unity Monetization - Overview - Settings - takes up to 7 days of being published
 
 Port to Google Play store
-Build landing page (create website for company but searches go directly to Secret Spy page)
 Create localized verions to tap foreign markets with low retention/interaction
+Build landing page (create website for company but searches go directly to Secret Spy page)

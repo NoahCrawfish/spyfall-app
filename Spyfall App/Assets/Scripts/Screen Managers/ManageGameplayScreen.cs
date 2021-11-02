@@ -24,6 +24,7 @@ public class ManageGameplayScreen : MonoBehaviour
 
     private int startingTime;
     private int elapsedTime = 0;
+    private const int secondsToAd = 10;
     public Task timerTask;
     private ManageGame manageGame;
 #if UNITY_IOS
@@ -46,7 +47,7 @@ public class ManageGameplayScreen : MonoBehaviour
         notification = new iOSNotification() {
             Identifier = "timer_done_notification",
             Title = "Time's up!",
-            Body = "Press the done button to continue",
+            Body = "Press the \"Round Done\" button to continue",
             ShowInForeground = true,
             ForegroundPresentationOption = (PresentationOption.Alert | PresentationOption.Sound),
             CategoryIdentifier = "category_a",
@@ -123,7 +124,7 @@ public class ManageGameplayScreen : MonoBehaviour
                 UpdateTimer();
             }
 
-            if (elapsedTime == 10 && !manageGame.PaidUnlocked) {
+            if (elapsedTime == secondsToAd && !manageGame.PaidUnlocked) {
                 videoAd.StartLoadAd();
             }
 
@@ -163,8 +164,14 @@ public class ManageGameplayScreen : MonoBehaviour
     public void UpdateTimerFromPause() {
         if (gameplayScreen.activeSelf && elapsedTime < startingTime) {
             int deltaTime = Mathf.RoundToInt((float)(manageGame.UnpauseTime - manageGame.PauseTime).TotalSeconds);
+            bool passedAdTime = elapsedTime < secondsToAd && elapsedTime + deltaTime >= secondsToAd;
+
             elapsedTime += deltaTime;
             UpdateTimer();
+
+            if (passedAdTime) {
+                videoAd.StartLoadAd();
+            }
         }
     }
 

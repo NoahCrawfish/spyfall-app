@@ -90,7 +90,7 @@ public static class LocationsAndRoles {
             { "Apocalypse Shelter", "Group Leader, Raider, Scout, Guard, Zombie, Lone Wolf, Medic" }, // 7
             { "Area 51", "Conspiracy Theorist, President, UFO Designer, Alien, Gate Guard, Weapons Engineer, Alien Translator" }, // 7
             { "Death \"Planet\"", "Weapons Engineer, Stormsoldier, Janitor, Emperor, Darth Helmet, Space Princess, D-3PO, Galactic Chef" },
-            { "Moon Colony", "Moon Native, Rover Driver, On Vacation, Engineer, Researcher, Alien Parasite, Military" }, // 7
+            { "Moon Colony", "Moon Native, Rover Driver, Vacationing, Engineer, Researcher, Alien Parasite, Military" }, // 7
             { "Robot Rights Protest", "Protest Organizer, Police Officer, Human Activist, Self-Driving Car, Sentient Toaster, Counter-Protester, Roomba, Rioter" },
             { "Time Machine", "Dinosaur, Confused Caveman, Mad Scientist, Timeline Manager, Researcher, News Reporter, Future You, Time Traveler" },
             { "Triassic Park", "T-Rex, Triceratops, Park Investor, Petting Zoo Visitor, Dinosaur Trainer, Archaeologist, Guide" } // 7
