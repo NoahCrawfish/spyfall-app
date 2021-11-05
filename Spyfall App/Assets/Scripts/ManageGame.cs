@@ -6,7 +6,6 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Xml;
 using UnityEngine;
-using UnityEngine.Video;
 using TMPro;
 
 public class ManageGame : MonoBehaviour {
@@ -17,7 +16,6 @@ public class ManageGame : MonoBehaviour {
     [SerializeField] private TextMeshProUGUI roundText;
     [SerializeField] private GameObject multiplierText;
     [SerializeField] private GameObject removeAdsButton;
-    [SerializeField] private List<VideoPlayer> videoPlayers = new List<VideoPlayer>();
     public PurchasePopupController purchasePopup;
     public PurchasePopupController purchasePopup2;
 
@@ -86,18 +84,17 @@ public class ManageGame : MonoBehaviour {
         manageSettings = FindObjectOfType<ManageSettingsScreen>();
         manageAddPlayers = FindObjectOfType<ManageAddPlayersScreen>();
         manageAudio = FindObjectOfType<ManageAudio>();
+
+        IapManager = new IAPManager(this);
     }
 
     private void Start() {
         manageAudio.Play("bg_music", true);
-        PrepareVideo();
 
         savePath = Application.persistentDataPath;
         if (!Directory.Exists(savePath)) {
             Directory.CreateDirectory(savePath);
         }
-
-        IapManager = new IAPManager(this);
 
         DeleteDepreciatedSets();
         LoadSets();
@@ -126,10 +123,6 @@ public class ManageGame : MonoBehaviour {
             }
         }
         Paused = pause;
-    }
-
-    private void PrepareVideo() {
-        videoPlayers.ForEach(player => player.Prepare());
     }
 
 
@@ -327,13 +320,9 @@ public class ManageGame : MonoBehaviour {
         }
     }
 
+
     // called if PaidUnlocked is set to true
     public void UnlockFullVersion() {
-        // exit if the paid version has already been unlocked
-        if (!CustomSet.locked) {
-            return;
-        }
-
         foreach (var locationSet in LocationSets) {
             locationSet.locked = false;
         }
@@ -342,6 +331,36 @@ public class ManageGame : MonoBehaviour {
         StartCoroutine(manageSettings.RefreshAllSets());
 
         removeAdsButton.SetActive(false);
+    }
+
+    public void LockAllContent() {
+        StartCoroutine(LockAllContentAsync());
+    }
+
+    public IEnumerator LockAllContentAsync() {
+        while (CustomSet == null) {
+            yield return new WaitForEndOfFrame();
+        }
+
+        if (CustomSet.locked) {
+            Debug.Log("Content already locked, skipping.");
+            yield break;
+        }
+
+        // lock every location set after the first 2 packs
+        LocationSets.Where(locationSet => LocationSets.IndexOf(locationSet) >= 2).ToList().ForEach(locationSet => locationSet.locked = true);
+        CustomSet.locked = true;
+
+        manageSettings.SaveLocationStatesAndSet();
+        StartCoroutine(manageSettings.RefreshAllSets());
+        removeAdsButton.SetActive(true);
+
+        Debug.Log("Content successfully locked.");
+    }
+
+    // called in inspector from RestorePurchase button
+    public void RestorePurchases() {
+        IapManager.RestorePurchases();
     }
 
 

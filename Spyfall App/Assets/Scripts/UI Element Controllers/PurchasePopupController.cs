@@ -11,6 +11,7 @@ public class PurchasePopupController : MonoBehaviour
     [SerializeField] private List<Selectable> selectables = new List<Selectable>();
     [SerializeField] private TextMeshProUGUI buttonText;
     [SerializeField] private TextMeshProUGUI removeAdsText;
+    [SerializeField] private GameObject restorePurchasesButton;
 
     public enum ButtonMessage {
         unlock,
@@ -25,6 +26,10 @@ public class PurchasePopupController : MonoBehaviour
     private void OnEnable() {
         SetButtonText(ButtonMessage.unlock);
         ShowPopup();
+
+        #if UNITY_IOS
+            restorePurchasesButton.SetActive(true);
+        #endif
     }
 
     private void ShowPopup() {
