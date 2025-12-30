@@ -37,11 +37,13 @@ public class IAPManager : IStoreListener {
                 // expect a reponse in ProcessPurchase or OnPurchaseFailed
                 controller.InitiatePurchase(product);
 
-            } else {
+            }
+            else {
                 Debug.Log("BuyProductID: FAIL. Not purchasing product, either is not found or is not available for purchase");
                 UpdateButtonMessage(PurchasePopupController.ButtonMessage.whoops);
             }
-        } else {
+        }
+        else {
             Debug.Log("BuyProductID FAIL. Not initialized.");
             UpdateButtonMessage(PurchasePopupController.ButtonMessage.unavailable);
         }
@@ -61,12 +63,14 @@ public class IAPManager : IStoreListener {
             var apple = extensions.GetExtension<IAppleExtensions>();
             // Begin the asynchronous process of restoring purchases. Expect a confirmation response in 
             // the Action<bool> below, and ProcessPurchase if there are previously purchased products to restore.
-            apple.RestoreTransactions((result) => {
+            apple.RestoreTransactions((result) =>
+            {
                 // The first phase of restoration. If no more responses are received on ProcessPurchase then 
                 // no purchases are available to be restored.
                 Debug.Log("RestorePurchases continuing: " + result + ". If no further messages, no purchases available to restore.");
             });
-        } else {
+        }
+        else {
             Debug.Log("RestorePurchases FAIL. Not supported on this platform. Current = " + Application.platform);
         }
     }
@@ -74,12 +78,15 @@ public class IAPManager : IStoreListener {
     private void UpdateButtonMessage(PurchasePopupController.ButtonMessage buttonMessage) {
         if (manageGame.purchasePopup.gameObject.activeSelf) {
             manageGame.purchasePopup.SetButtonText(buttonMessage);
-        } else if (manageGame.purchasePopup2.gameObject.activeSelf) {
+        }
+        else if (manageGame.purchasePopup2.gameObject.activeSelf) {
             manageGame.purchasePopup2.SetButtonText(buttonMessage);
         }
     }
 
+    // always return true for local testing
     private bool IsReceiptValid(string unityIAPReceipt) {
+        /*
         // IMPORTANT: GO BACK LATER AND ADD GOOGLE PLAY PUBLIC LICENSE KEY TO RECEIPT VALIDATION OBFUSCATOR
         // window -> unity iap -> receipt validation obfuscator
         var validator = new CrossPlatformValidator(GooglePlayTangle.Data(), AppleTangle.Data(), Application.identifier);
@@ -109,6 +116,7 @@ public class IAPManager : IStoreListener {
             manageGame.LockAllContent();
             return false;
         }
+        */
 
         return true;
     }
@@ -123,7 +131,6 @@ public class IAPManager : IStoreListener {
         this.controller = controller;
         this.extensions = extensions;
 
-        // perform check that unlocked content has a valid receipt, otherwise lock all content
         IsReceiptValid(controller.products.WithID(proVersionID).receipt);
     }
 
@@ -147,7 +154,8 @@ public class IAPManager : IStoreListener {
             if (manageGame.purchasePopup2.gameObject.activeSelf) {
                 manageGame.purchasePopup2.ClosePopup();
             }
-        } else {
+        }
+        else {
             Debug.Log("ProcessPurchase: FAIL. Invalid purchase caught by CrossPlatformValidator.");
             UpdateButtonMessage(PurchasePopupController.ButtonMessage.whoops);
         }
