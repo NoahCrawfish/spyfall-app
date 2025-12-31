@@ -19,4 +19,4 @@ An iOS application built in **Unity (C#)** based on the party game **Spyfall**. 
 
 ## Demo Video
 
-https://youtube.com/shorts/6KqpwztUOD4
+https://github.com/user-attachments/assets/6cd09436-495b-4943-ba98-7b5da2178633
