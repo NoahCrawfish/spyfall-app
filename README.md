@@ -1,2 +1,22 @@
-# spyfall-app
- IOS Spyfall Application
+# Spyfall App
+
+An iOS application built in **Unity (C#)** based on the party game **Spyfall**. All players except the Spy receive the same location with unique roles. The Spy receives no location information and has to infer it through conversation while avoiding detection.
+
+## Implementation details
+
+- **Purchasing + Monetization**
+  - Integrated Unity IAP to support:
+    - Ad-supported free play
+    - Unlockable premium content
+
+- **Persistent Data Storage**
+  - Player settings are stored using Unity's built-in `PlayerPrefs`
+  - Location pack data (including custom packs) is serialized to **XML**
+
+- **Other Key Features**
+  - Implemented a mini drawing tool for users to create thumbnails for custom locations
+  - Dynamically generated UI elements have their properties tweened on page transition or user interaction
+
+## Demo Video
+
+https://youtube.com/shorts/6KqpwztUOD4
