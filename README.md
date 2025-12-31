@@ -2,7 +2,7 @@
 
 An iOS application built in **Unity (C#)** based on the party game **Spyfall**. All players except the Spy receive the same location with unique roles. The Spy receives no location information and has to infer it through conversation while avoiding detection.
 
-## Implementation details
+## Implementation Details
 
 - **Purchasing + Monetization**
   - Integrated Unity IAP to support:
